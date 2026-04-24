@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+instance/
+*.db
+static/uploads/videos/*
+static/uploads/thumbnails/*
+static/uploads/materials/*
+static/uploads/avatars/*
+!static/uploads/videos/.gitkeep
+!static/uploads/thumbnails/.gitkeep
+!static/uploads/materials/.gitkeep
+!static/uploads/avatars/.gitkeep
+.env
+venv/
+.venv/

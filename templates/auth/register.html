@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}إنشاء حساب{% endblock %}
+{% block extra_head %}
+<style>
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse 70% 60% at 30% 30%,rgba(27,94,59,0.06),transparent),var(--bg);}
+.auth-box{background:#fff;border:0.5px solid var(--bd);border-radius:18px;padding:2.5rem;width:100%;max-width:440px;box-shadow:0 8px 40px rgba(0,0,0,0.08);}
+.auth-logo{text-align:center;margin-bottom:1.75rem;}
+.auth-logo .ic{width:50px;height:50px;background:linear-gradient(135deg,var(--em),var(--em-l));border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto .65rem;}
+.auth-logo h1{font-family:'Amiri',serif;font-size:19px;color:var(--gold);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+</style>
+{% endblock %}
+{% block body %}
+<div class="auth-box">
+  <div class="auth-logo">
+    <div class="ic">📖</div>
+    <h1>نور القرآن</h1>
+  </div>
+  <h2 style="font-family:'Amiri',serif;font-size:22px;color:var(--tx);margin-bottom:.2rem;">إنشاء حساب جديد</h2>
+  <p style="font-size:13px;color:var(--tx2);margin-bottom:1.35rem;">ابدأ رحلتك في تعلم القرآن الكريم</p>
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}<div class="flash flash-{{ cat }}" style="margin-bottom:.5rem;">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  <form method="POST">
+    <div class="form-group">
+      <label class="form-label">الاسم الكامل</label>
+      <input type="text" name="name" class="form-input" placeholder="أدخل اسمك الكامل" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label">البريد الإلكتروني</label>
+      <input type="email" name="email" class="form-input" placeholder="example@email.com" required>
+    </div>
+    <div class="grid2">
+      <div class="form-group">
+        <label class="form-label">كلمة المرور</label>
+        <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">الدولة</label>
+        <select name="country" class="form-input">
+          <option value="">اختر</option>
+          <option>المملكة العربية السعودية</option>
+          <option>مصر</option><option>الكويت</option>
+          <option>الإمارات</option><option>الأردن</option>
+          <option>المغرب</option><option>تونس</option>
+          <option>أخرى</option>
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary" style="width:100%;padding:.7rem;font-size:14px;justify-content:center;margin-top:.5rem;">إنشاء الحساب</button>
+  </form>
+  <div style="text-align:center;margin-top:1.1rem;font-size:13px;color:var(--tx2);">
+    لديك حساب؟ <a href="{{ url_for('login') }}" style="color:var(--em);font-weight:500;">تسجيل الدخول</a>
+  </div>
+  <div style="text-align:center;margin-top:.4rem;font-size:11px;">
+    <a href="{{ url_for('index') }}" style="color:var(--tx3);">← العودة للرئيسية</a>
+  </div>
+</div>
+{% endblock %}

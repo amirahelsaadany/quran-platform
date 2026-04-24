@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% block title %}الرئيسية{% endblock %}
+{% block extra_head %}
+<style>
+nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2.5rem;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--bd);position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:.65rem;}
+.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--em),var(--em-l));border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;}
+.logo h1{font-family:'Amiri',serif;font-size:20px;color:var(--gold);}
+.logo p{font-size:12px;color:var(--tx3);}
+.nav-links{display:flex;gap:1.75rem;}
+.nav-links a{font-size:15px;color:var(--tx2);transition:color .2s;}
+.nav-links a:hover{color:var(--em);}
+.nav-cta{display:flex;gap:.6rem;}
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;padding:5rem 2.5rem 4rem;background:radial-gradient(ellipse 70% 60% at 15% 10%,rgba(27,94,59,0.06) 0%,transparent 60%),radial-gradient(ellipse 50% 70% at 85% 85%,rgba(184,146,42,0.06) 0%,transparent 60%),var(--bg);}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:var(--em-bg);border:0.5px solid var(--em-bd);border-radius:100px;padding:.3rem .85rem;font-size:12px;color:var(--em);margin-bottom:1.25rem;}
+.sheikh-card{background:#fff;border:0.5px solid var(--bd);border-radius:18px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.07);}
+.sheikh-photo-wrap{aspect-ratio:4/3;position:relative;overflow:hidden;background:linear-gradient(135deg,#1B3A2D,#2D5A40);}
+.sheikh-img{width:100%;height:100%;object-fit:cover;display:block;}
+.sheikh-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;}
+.sheikh-placeholder-ic{font-size:56px;}
+.sheikh-placeholder-txt{font-size:14px;color:rgba(255,255,255,0.5);}
+.sheikh-overlay{position:absolute;top:0;left:0;right:0;padding:1rem;background:linear-gradient(180deg,rgba(0,0,0,0.3),transparent);}
+.sheikh-arabic{font-family:'Amiri',serif;font-size:18px;color:rgba(255,255,255,0.7);text-align:left;}
+.sheikh-info{padding:1.1rem 1.25rem;}
+.sheikh-name-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;}
+.sheikh-name{font-size:17px;font-weight:600;color:var(--tx);}
+.sheikh-title{font-size:13px;color:var(--em);margin-top:.15rem;}
+.sheikh-bio{font-size:14px;color:var(--tx2);line-height:1.7;margin-top:.5rem;border-top:0.5px solid var(--bd);padding-top:.6rem;}
+.dot{width:7px;height:7px;background:var(--em-l);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.85);}}
+.hero h2{font-family:'Amiri',serif;font-size:52px;line-height:1.25;color:var(--tx);margin-bottom:.85rem;}
+.hero h2 span{color:var(--em);}
+.hero p{font-size:17px;color:var(--tx2);line-height:1.9;margin-bottom:1.75rem;max-width:460px;}
+.hero-btns{display:flex;gap:.75rem;flex-wrap:wrap;}
+.stats-row{display:flex;gap:2rem;margin-top:2.5rem;padding-top:2rem;border-top:0.5px solid var(--bd);}
+.stat h3{font-size:28px;font-weight:700;color:var(--em);}
+.stat p{font-size:14px;color:var(--tx3);}
+.video-card{background:#fff;border:0.5px solid var(--bd);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.07);}
+.video-thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#1B3A2D,#2D5A40);display:flex;align-items:center;justify-content:center;position:relative;}
+.arabic-label{position:absolute;top:14px;right:14px;font-family:'Amiri',serif;font-size:18px;color:rgba(255,255,255,0.2);}
+.play-btn{width:56px;height:56px;background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.play-tri{width:0;height:0;border:10px solid transparent;border-left:18px solid #fff;margin-right:-4px;}
+.video-info{padding:.9rem 1.1rem;display:flex;justify-content:space-between;align-items:center;}
+.live-pill{background:var(--red-bg);border:0.5px solid var(--red-bd);color:var(--red);font-size:11px;padding:.2rem .5rem;border-radius:6px;display:flex;align-items:center;gap:.3rem;}
+.rdot{width:6px;height:6px;background:var(--red);border-radius:50%;animation:pulse 1.5s infinite;}
+.section{padding:4rem 2.5rem;}
+.section.alt{background:#fff;}
+.sec-hdr{text-align:center;margin-bottom:2.5rem;}
+.sec-tag{display:inline-block;background:var(--em-bg);border:0.5px solid var(--em-bd);color:var(--em);font-size:11px;padding:.25rem .8rem;border-radius:100px;margin-bottom:.7rem;}
+.sec-hdr h2{font-family:'Amiri',serif;font-size:38px;color:var(--tx);margin-bottom:.6rem;}
+.sec-hdr h2 span{color:var(--em);}
+.sec-hdr p{color:var(--tx2);font-size:16px;max-width:500px;margin:0 auto;line-height:1.85;}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+.feat{background:#fff;border:0.5px solid var(--bd);border-radius:14px;padding:1.35rem;transition:all .2s;}
+.feat:hover{border-color:var(--em-bd);transform:translateY(-2px);}
+.feat-ic{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:.9rem;}
+.fi-em{background:var(--em-bg);border:0.5px solid var(--em-bd);}
+.fi-go{background:var(--gold-bg);border:0.5px solid var(--gold-bd);}
+.fi-bl{background:#eff6ff;border:0.5px solid #bfdbfe;}
+.feat h3{font-size:16px;font-weight:500;margin-bottom:.4rem;}
+.feat p{font-size:14px;color:var(--tx2);line-height:1.75;}
+.courses-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+.c-card{background:#fff;border:0.5px solid var(--bd);border-radius:14px;overflow:hidden;transition:all .2s;cursor:pointer;}
+.c-card:hover{transform:translateY(-3px);border-color:var(--em-bd);box-shadow:0 6px 20px rgba(27,94,59,0.1);}
+.c-thumb{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:32px;position:relative;}
+.ct1{background:linear-gradient(135deg,#1B3A2D,#0D2B1C);}
+.ct2{background:linear-gradient(135deg,#3A2B18,#261C0D);}
+.ct3{background:linear-gradient(135deg,#1A2B3E,#0D1B2A);}
+.ct4{background:linear-gradient(135deg,#2D1B3A,#1A0D2B);}
+.ct5{background:linear-gradient(135deg,#1A3A1B,#0D2B0E);}
+.ct6{background:linear-gradient(135deg,#3A1B1B,#2B0D0D);}
+.c-body{padding:.9rem 1.1rem;}
+.c-body h3{font-size:16px;font-weight:500;margin-bottom:.3rem;}
+.c-body .meta{font-size:13px;color:var(--tx3);margin-bottom:.65rem;}
+.c-foot{display:flex;justify-content:space-between;align-items:center;}
+.price{font-size:16px;font-weight:700;color:var(--em);}
+.stars{font-size:11px;color:var(--gold-l);}
+.live-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.ls-card{background:#fff;border:0.5px solid var(--bd);border-radius:12px;padding:1rem 1.15rem;display:flex;justify-content:space-between;align-items:center;}
+.ls-left .day{font-size:14px;color:var(--em);font-weight:500;}
+.ls-left .name{font-size:15px;color:var(--tx);}
+.ls-left .time{font-size:13px;color:var(--tx3);}
+.ann-list{display:flex;flex-direction:column;gap:.75rem;}
+.ann-item{background:#fff;border:0.5px solid var(--bd);border-radius:10px;padding:.9rem 1.1rem;}
+.ann-item h4{font-size:16px;font-weight:500;margin-bottom:.3rem;}
+.ann-item p{font-size:15px;color:var(--tx2);line-height:1.75;}
+.ann-item .dt{font-size:11px;color:var(--tx3);margin-top:.4rem;}
+.ayah{text-align:center;padding:1.5rem;font-family:'Amiri',serif;font-size:24px;color:var(--em);opacity:.5;background:var(--em-bg);border-top:0.5px solid var(--em-bd);border-bottom:0.5px solid var(--em-bd);}
+footer{background:#fff;border-top:0.5px solid var(--bd);padding:2.5rem;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem;}
+.foot-brand h2{font-family:'Amiri',serif;font-size:22px;color:var(--em);margin-bottom:.4rem;}
+.foot-brand p{font-size:14px;color:var(--tx2);line-height:1.75;max-width:240px;}
+footer h4{font-size:14px;font-weight:500;color:var(--tx);margin-bottom:.85rem;letter-spacing:.5px;}
+footer a{display:block;font-size:13px;color:var(--tx2);margin-bottom:.5rem;transition:color .2s;}
+footer a:hover{color:var(--em);}
+.foot-bottom{background:#fff;border-top:0.5px solid var(--bd);padding:1rem 2.5rem;text-align:center;font-size:11px;color:var(--tx3);}
+</style>
+{% endblock %}
+{% block body %}
+<nav>
+  <div class="logo">
+    <div class="logo-icon">📖</div>
+    <div><h1>نور القرآن</h1><p>منصة تعليم القرآن الكريم</p></div>
+  </div>
+  <div class="nav-links">
+    <a href="{{ url_for('index') }}">الرئيسية</a>
+    <a href="{{ url_for('courses_list') }}">الدروس</a>
+    <a href="#live">الجلسات المباشرة</a>
+    <a href="#announcements">الإعلانات</a>
+  </div>
+  <div class="nav-cta">
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('dashboard') }}" class="btn btn-primary">لوحة التحكم</a>
+    {% else %}
+      <a href="{{ url_for('login') }}" class="btn btn-ghost">تسجيل الدخول</a>
+      <a href="{{ url_for('register') }}" class="btn btn-primary">إنشاء حساب</a>
+    {% endif %}
+  </div>
+</nav>
+
+<div class="hero">
+  <div>
+    <div class="hero-badge"><span class="dot"></span> القرآن الكريم برواية حفص</div>
+    <h2>تعلم القرآن<br>مع <span>أفضل المقرئين</span></h2>
+    <p>منصة متكاملة للتعلم والحفظ والتجويد، مع شيخ متخصص ومتابعة فردية لكل طالب في أي مكان وأي وقت.</p>
+    <div class="hero-btns">
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">ابدأ رحلتك الآن</a>
+      <a href="{{ url_for('courses_list') }}" class="btn btn-ghost btn-lg">تصفح الدروس</a>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><h3>+{{ stats.students }}</h3><p>طالب منتسب</p></div>
+      <div class="stat"><h3>+{{ stats.lessons }}</h3><p>درس مسجل</p></div>
+      <div class="stat"><h3>{{ stats.courses }}</h3><p>كورس متاح</p></div>
+    </div>
+  </div>
+  <div>
+    <div class="sheikh-card">
+      <div class="sheikh-photo-wrap">
+        {% if sheikh and sheikh.hero_photo %}
+          <img src="{{ url_for('static', filename=sheikh.hero_photo) }}" alt="{{ sheikh.name }}" class="sheikh-img">
+        {% else %}
+          <div class="sheikh-placeholder">
+            <span class="sheikh-placeholder-ic">👳</span>
+            <p class="sheikh-placeholder-txt">لم تُرفع صورة بعد</p>
+          </div>
+        {% endif %}
+        <div class="sheikh-overlay">
+          <div class="sheikh-arabic"></div>
+        </div>
+      </div>
+      <div class="sheikh-info">
+        <div class="sheikh-name-row">
+          <div>
+            <div class="sheikh-name">{% if sheikh %}{{ sheikh.name }}{% else %}الشيخ المقرئ{% endif %}</div>
+            <div class="sheikh-title">مقرئ ومعلم القرآن الكريم</div>
+          </div>
+
+        </div>
+        {% if sheikh and sheikh.bio %}
+        <div class="sheikh-bio">{{ sheikh.bio }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ayah">﴿ وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا ﴾</div>
+
+<div class="section alt">
+  <div class="sec-hdr">
+    <div class="sec-tag">ما نقدمه</div>
+    <h2>خدمات <span>المنصة</span></h2>
+    <p>كل ما تحتاجه لرحلة تعلم القرآن الكريم في مكان واحد</p>
+  </div>
+  <div class="feat-grid">
+    <div class="feat"><div class="feat-ic fi-em">🎥</div><h3>دروس مسجلة</h3><p>مكتبة من الدروس المصورة في التجويد والحفظ والتفسير، متاحة في أي وقت</p></div>
+    <div class="feat"><div class="feat-ic fi-go">📡</div><h3>حلقات مباشرة</h3><p>جلسات أسبوعية مباشرة مع الشيخ للتسميع والتصحيح وطرح الأسئلة</p></div>
+    <div class="feat"><div class="feat-ic fi-bl">📞</div><h3>متابعة فردية</h3><p>متابعة شخصية مع الشيخ لتقييم مستواك وتحديد خطة التعلم المناسبة</p></div>
+    <div class="feat"><div class="feat-ic fi-go">📊</div><h3>تتبع التقدم</h3><p>لوحة تحكم شخصية تعرض مستواك ونسبة حفظك وتقاريرك الأسبوعية</p></div>
+    <div class="feat"><div class="feat-ic fi-em">🏆</div><h3>شهادات معتمدة</h3><p>احصل على إجازة معتمدة بعد إكمال المنهج مع سند متصل بالنبي ﷺ</p></div>
+    <div class="feat"><div class="feat-ic fi-bl">💬</div><h3>مجتمع الطلاب</h3><p>تواصل مع زملائك وتبادل الخبرات والدعم المتبادل في رحلة الحفظ</p></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-hdr">
+    <div class="sec-tag">الكورسات</div>
+    <h2>الدروس <span>المتاحة</span></h2>
+    <p>برامج متنوعة لجميع المستويات من المبتدئ حتى الإجازة</p>
+  </div>
+  {% set thumbs = ['ct1','ct2','ct3','ct4','ct5','ct6'] %}
+  {% set icons = ['🌙','📜','✨','🕌','📖','🌟'] %}
+  <div class="courses-grid">
+    {% for course in courses %}
+    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="c-card">
+      <div class="c-thumb {{ thumbs[loop.index0 % 6] }}">
+        <span>{{ icons[loop.index0 % 6] }}</span>
+        <span style="position:absolute;top:10px;right:10px;" class="badge {% if course.is_free or course.price==0 %}badge-em{% else %}badge-gold{% endif %}">
+          {% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ر.س{% endif %}
+        </span>
+      </div>
+      <div class="c-body">
+        <h3>{{ course.title }}</h3>
+        <div class="meta">{{ course.level }} · {{ course.category }}</div>
+        <div class="c-foot">
+          <span class="stars">★★★★★</span>
+          <span class="price">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ر.س{% endif %}</span>
+        </div>
+      </div>
+    </a>
+    {% else %}
+    <p style="color:var(--tx3);grid-column:1/-1;text-align:center;padding:2rem;">لا توجد كورسات بعد</p>
+    {% endfor %}
+  </div>
+  <div style="text-align:center;margin-top:2rem;">
+    <a href="{{ url_for('courses_list') }}" class="btn btn-ghost btn-lg">عرض جميع الكورسات</a>
+  </div>
+</div>
+
+<div class="section alt" id="live">
+  <div class="sec-hdr">
+    <div class="sec-tag">المباشر</div>
+    <h2>الجلسات <span>المباشرة</span></h2>
+    <p>حلقات أسبوعية منتظمة — سجّل مقعدك وانضم من أي مكان</p>
+  </div>
+  <div class="live-grid">
+    {% for ls in live_sessions %}
+    <div class="ls-card">
+      <div class="ls-left">
+        <div class="day">{{ ls.scheduled_at.strftime('%A') }}</div>
+        <div class="name">{{ ls.title }}</div>
+        <div class="time">{{ ls.scheduled_at.strftime('%H:%M') }} · {{ ls.duration_minutes }} دقيقة</div>
+      </div>
+      {% if current_user.is_authenticated and ls.meeting_link %}
+        <a href="{{ ls.meeting_link }}" target="_blank" class="btn btn-primary btn-sm">انضم</a>
+      {% else %}
+        <a href="{{ url_for('register') }}" class="btn btn-ghost btn-sm">سجّل</a>
+      {% endif %}
+    </div>
+    {% else %}
+    <p style="color:var(--tx3);grid-column:1/-1;text-align:center;padding:2rem;">لا توجد جلسات مجدولة حالياً</p>
+    {% endfor %}
+  </div>
+</div>
+
+{% if announcements %}
+<div class="section" id="announcements">
+  <div class="sec-hdr">
+    <div class="sec-tag">إعلانات</div>
+    <h2>آخر <span>الأخبار</span></h2>
+  </div>
+  <div class="ann-list" style="max-width:700px;margin:0 auto;">
+    {% for ann in announcements %}
+    <div class="ann-item">
+      <h4>{{ ann.title }}</h4>
+      <p>{{ ann.content }}</p>
+      <div class="dt">{{ ann.created_at.strftime('%Y-%m-%d') }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="ayah">﴿ إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ ﴾</div>
+
+<footer>
+  <div class="foot-brand">
+    <h2>نور القرآن</h2>
+    <p>منصة متكاملة لتعليم القرآن الكريم تجمع بين الأصالة والتقنية</p>
+  </div>
+  <div><h4>المنصة</h4><a href="{{ url_for('courses_list') }}">الكورسات</a><a href="#live">الجلسات المباشرة</a><a href="{{ url_for('register') }}">إنشاء حساب</a></div>
+  <div><h4>الدعم</h4><a href="#">الأسئلة الشائعة</a><a href="{{ url_for('contact') }}">تواصل معنا</a></div>
+  <div><h4>تابعنا</h4><a href="#">يوتيوب</a><a href="#">تيليجرام</a><a href="#">واتساب</a></div>
+</footer>
+<div class="foot-bottom">جميع الحقوق محفوظة © ١٤٤٦ هـ · منصة نور القرآن</div>
+{% endblock %}

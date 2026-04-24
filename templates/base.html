@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}نور القرآن{% endblock %} | منصة تعليم القرآن الكريم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:18px;}
+
+:root{
+  --gold:#8B6914;--gold-l:#B8922A;--gold-bg:#FDF6E3;--gold-bd:#E8D5A3;
+  --em:#1B5E3B;--em-l:#2D8A5E;--em-bg:#EEF7F2;--em-bd:#A8D5BC;
+  --bg:#FAFAF7;--bg2:#FFFFFF;--bg3:#F4F1E8;
+  --tx:#1A1A14;--tx2:#6B6650;--tx3:#9B9278;
+  --bd:#E8E4D8;--bd2:#D4CDB8;
+  --red:#DC2626;--red-bg:#FEF2F2;--red-bd:#FECACA;
+}
+
+body{
+  font-family:'Tajawal',sans-serif;
+  font-size:1rem;
+  background:var(--bg);
+  color:var(--tx);
+  min-height:100vh;
+}
+
+a{text-decoration:none;color:inherit;}
+img{max-width:100%;}
+
+
+.hero{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:2rem;
+}
+
+.hero-left{
+  flex:1;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  height:auto;
+}
+
+.hero-left .card{
+  padding:0;
+  overflow:hidden;
+  height:auto !important;
+}
+
+.hero-img{
+  width:100%;
+  max-width:400px;
+  height:260px;
+  object-fit:cover;
+  border-radius:16px;
+  display:block;
+}
+
+
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.3rem;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:500;cursor:pointer;border:none;transition:all .2s;}
+.btn-primary{background:var(--em);color:#fff;}
+.btn-primary:hover{background:var(--em-l);}
+.btn-gold{background:var(--gold-l);color:#fff;}
+.btn-gold:hover{background:var(--gold);}
+.btn-ghost{background:transparent;border:0.5px solid var(--bd2);color:var(--tx2);}
+.btn-ghost:hover{border-color:var(--em);color:var(--em);}
+.btn-danger{background:#fee2e2;color:var(--red);border:0.5px solid var(--red-bd);}
+.btn-danger:hover{background:#fecaca;}
+.btn-sm{padding:.4rem .9rem;font-size:.9rem;}
+.btn-lg{padding:1rem 2.4rem;font-size:1.2rem;}
+
+.card{background:#fff;border:0.5px solid var(--bd);border-radius:14px;padding:1.4rem;}
+
+.badge{display:inline-block;padding:.3rem .7rem;border-radius:6px;font-size:.8rem;font-weight:500;}
+.badge-em{background:var(--em-bg);color:var(--em);border:0.5px solid var(--em-bd);}
+.badge-gold{background:var(--gold-bg);color:var(--gold);border:0.5px solid var(--gold-bd);}
+.badge-red{background:var(--red-bg);color:var(--red);border:0.5px solid var(--red-bd);}
+.badge-gray{background:#f3f4f6;color:#6b7280;border:0.5px solid #e5e7eb;}
+
+.flash{padding:.9rem 1.2rem;border-radius:8px;margin:.6rem 0;font-size:1rem;}
+.flash-success{background:#f0fdf4;color:#166534;border:0.5px solid #bbf7d0;}
+.flash-error{background:var(--red-bg);color:var(--red);border:0.5px solid var(--red-bd);}
+.flash-info{background:#eff6ff;color:#1d4ed8;border:0.5px solid #bfdbfe;}
+
+.form-group{margin-bottom:1.2rem;}
+.form-label{display:block;font-size:1rem;color:var(--tx2);margin-bottom:.4rem;font-weight:500;}
+
+.form-input{
+  width:100%;
+  padding:.75rem 1rem;
+  border:0.5px solid var(--bd2);
+  border-radius:8px;
+  font-family:'Tajawal',sans-serif;
+  font-size:1rem;
+  background:#fff;
+  color:var(--tx);
+  outline:none;
+  transition:border-color .2s;
+}
+
+.form-input:focus{border-color:var(--em);}
+textarea.form-input{resize:vertical;min-height:100px;}
+select.form-input{cursor:pointer;}
+
+.divider{height:0.5px;background:var(--bd);margin:1.4rem 0;}
+</style>
+
+{% block extra_head %}{% endblock %}
+</head>
+
+<body>
+
+{% block body %}
+<!-- 👇 مثال للهيرو بعد التعديل -->
+<div class="hero">
+
+  <div class="hero-left">
+    <div class="card">
+      <img src="{{ hero_photo }}" class="hero-img">
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <h1>تعلم القرآن مع أفضل المقرئين</h1>
+    <p>منصة متكاملة لتعلم الحفظ والتجويد مع شيخ متخصص</p>
+  </div>
+
+</div>
+{% endblock %}
+
+<script>
+setTimeout(()=>{document.querySelectorAll('.flash').forEach(e=>e.style.opacity='0')},4000);
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

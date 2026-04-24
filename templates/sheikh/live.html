@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}الجلسات المباشرة{% endblock %}
+{% block extra_head %}
+<style>
+body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+.sidebar{background:#fff;border-left:0.5px solid var(--bd);padding:1.5rem 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+.sb-logo{padding:0 1.25rem 1.5rem;border-bottom:0.5px solid var(--bd);}
+.sb-logo .ic{width:38px;height:38px;background:linear-gradient(135deg,var(--em),var(--em-l));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+.sb-logo h2{font-family:'Amiri',serif;font-size:16px;color:var(--gold);margin-top:.5rem;}
+.sb-link{display:flex;align-items:center;gap:.65rem;padding:.6rem 1.25rem;font-size:13px;color:var(--tx2);transition:all .15s;border-right:2px solid transparent;}
+.sb-link:hover,.sb-link.active{background:var(--em-bg);color:var(--em);border-right-color:var(--em);}
+.sb-section{padding:.75rem 1.25rem .25rem;font-size:10px;color:var(--tx3);letter-spacing:.5px;}
+.main{background:var(--bg);padding:2rem;overflow-y:auto;}
+.page-title{font-family:'Amiri',serif;font-size:26px;color:var(--tx);margin-bottom:1.5rem;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;}
+.ls-card{background:#fff;border:0.5px solid var(--bd);border-radius:12px;padding:1.1rem;margin-bottom:.75rem;}
+.ls-card h4{font-size:14px;font-weight:500;margin-bottom:.3rem;}
+.ls-card .meta{font-size:12px;color:var(--tx3);}
+.ls-card .desc{font-size:12px;color:var(--tx2);margin-top:.35rem;}
+.ls-card .actions{display:flex;gap:.5rem;margin-top:.75rem;}
+</style>
+{% endblock %}
+{% block body %}
+<div class="sidebar">
+  <div class="sb-logo"><div class="ic">📖</div><h2 style="font-family:'Amiri',serif;font-size:16px;color:var(--gold);margin-top:.5rem;">نور القرآن</h2></div>
+  <div class="sb-section">الرئيسية</div>
+  <a href="{{ url_for('sheikh_dashboard') }}" class="sb-link"><span>🏠</span>لوحة التحكم</a>
+  <div class="sb-section">الكورسات</div>
+  <a href="{{ url_for('sheikh_courses') }}" class="sb-link"><span>📚</span>كورساتي</a>
+  <a href="{{ url_for('new_course') }}" class="sb-link"><span>➕</span>كورس جديد</a>
+  <div class="sb-section">التواصل</div>
+  <a href="{{ url_for('sheikh_live') }}" class="sb-link active"><span>📡</span>الجلسات المباشرة</a>
+  <a href="{{ url_for('sheikh_announcements') }}" class="sb-link"><span>📢</span>الإعلانات</a>
+  <a href="{{ url_for('sheikh_students') }}" class="sb-link"><span>👥</span>الطلاب</a>
+  <div class="sb-section">الحساب</div>
+  <a href="{{ url_for('sheikh_profile') }}" class="sb-link"><span>👤</span>ملفي الشخصي</a>
+  <a href="{{ url_for('logout') }}" class="sb-link"><span>🚪</span>خروج</a>
+</div>
+<div class="main">
+  {% with msgs = get_flashed_messages(with_categories=true) %}{% for cat,msg in msgs %}<div class="flash flash-{{ cat }}" style="margin-bottom:.75rem;">{{ msg }}</div>{% endfor %}{% endwith %}
+  <div class="page-title">الجلسات المباشرة</div>
+  <div class="grid2">
+    <div>
+      <div style="font-size:15px;font-weight:500;margin-bottom:1rem;">الجلسات المجدولة</div>
+      {% for ls in sessions %}
+      <div class="ls-card">
+        <div style="display:flex;justify-content:space-between;">
+          <h4>{{ ls.title }}</h4>
+          <span class="badge {% if ls.is_active %}badge-em{% else %}badge-gray{% endif %}">{% if ls.is_active %}نشط{% else %}معطل{% endif %}</span>
+        </div>
+        <div class="meta">📅 {{ ls.scheduled_at.strftime('%Y-%m-%d %H:%M') }} · {{ ls.duration_minutes }} دقيقة · حد أقصى {{ ls.max_students }} طالب</div>
+        {% if ls.description %}<div class="desc">{{ ls.description }}</div>{% endif %}
+        {% if ls.meeting_link %}<div class="meta" style="margin-top:.3rem;">🔗 <a href="{{ ls.meeting_link }}" target="_blank" style="color:var(--em);">رابط الجلسة</a></div>{% endif %}
+        <div class="actions">
+          <form method="POST"><input type="hidden" name="action" value="toggle"><input type="hidden" name="session_id" value="{{ ls.id }}"><button class="btn btn-ghost btn-sm">{% if ls.is_active %}إيقاف{% else %}تفعيل{% endif %}</button></form>
+          <form method="POST" onsubmit="return confirm('حذف الجلسة؟');"><input type="hidden" name="action" value="delete"><input type="hidden" name="session_id" value="{{ ls.id }}"><button class="btn btn-danger btn-sm">حذف</button></form>
+        </div>
+      </div>
+      {% else %}
+      <p style="color:var(--tx3);font-size:13px;padding:1rem 0;">لا توجد جلسات مجدولة.</p>
+      {% endfor %}
+    </div>
+    <div>
+      <div style="font-size:15px;font-weight:500;margin-bottom:1rem;">إضافة جلسة جديدة</div>
+      <div class="card">
+        <form method="POST">
+          <input type="hidden" name="action" value="create">
+          <div class="form-group">
+            <label class="form-label">عنوان الجلسة *</label>
+            <input type="text" name="title" class="form-input" placeholder="مثال: حلقة التسميع الأسبوعية" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">وصف</label>
+            <textarea name="description" class="form-input" rows="2" placeholder="موضوع الجلسة..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">رابط الجلسة (Zoom/Meet/...)</label>
+            <input type="url" name="meeting_link" class="form-input" placeholder="https://zoom.us/j/...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">موعد الجلسة *</label>
+            <input type="datetime-local" name="scheduled_at" class="form-input" required>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+            <div class="form-group">
+              <label class="form-label">المدة (دقيقة)</label>
+              <input type="number" name="duration_minutes" class="form-input" value="60" min="15">
+            </div>
+            <div class="form-group">
+              <label class="form-label">الحد الأقصى للطلاب</label>
+              <input type="number" name="max_students" class="form-input" value="50" min="1">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">إضافة الجلسة</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

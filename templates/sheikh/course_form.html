@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}كورس جديد{% endblock %}
+{% block extra_head %}
+<style>
+body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+.sidebar{background:#fff;border-left:0.5px solid var(--bd);padding:1.5rem 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+.sb-logo{padding:0 1.25rem 1.5rem;border-bottom:0.5px solid var(--bd);}
+.sb-logo .ic{width:38px;height:38px;background:linear-gradient(135deg,var(--em),var(--em-l));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+.sb-logo h2{font-family:'Amiri',serif;font-size:16px;color:var(--gold);margin-top:.5rem;}
+.sb-link{display:flex;align-items:center;gap:.65rem;padding:.6rem 1.25rem;font-size:13px;color:var(--tx2);transition:all .15s;border-right:2px solid transparent;}
+.sb-link:hover,.sb-link.active{background:var(--em-bg);color:var(--em);border-right-color:var(--em);}
+.sb-section{padding:.75rem 1.25rem .25rem;font-size:10px;color:var(--tx3);letter-spacing:.5px;}
+.main{background:var(--bg);padding:2rem;overflow-y:auto;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+</style>
+{% endblock %}
+{% block body %}
+<div class="sidebar">
+  <div class="sb-logo"><div class="ic">📖</div><h2 style="font-family:'Amiri',serif;font-size:16px;color:var(--gold);margin-top:.5rem;">نور القرآن</h2></div>
+  <div class="sb-section">الرئيسية</div>
+  <a href="{{ url_for('sheikh_dashboard') }}" class="sb-link"><span>🏠</span>لوحة التحكم</a>
+  <div class="sb-section">الكورسات</div>
+  <a href="{{ url_for('sheikh_courses') }}" class="sb-link"><span>📚</span>كورساتي</a>
+  <a href="{{ url_for('new_course') }}" class="sb-link active"><span>➕</span>كورس جديد</a>
+  <div class="sb-section">التواصل</div>
+  <a href="{{ url_for('sheikh_live') }}" class="sb-link"><span>📡</span>الجلسات المباشرة</a>
+  <a href="{{ url_for('sheikh_announcements') }}" class="sb-link"><span>📢</span>الإعلانات</a>
+  <a href="{{ url_for('sheikh_students') }}" class="sb-link"><span>👥</span>الطلاب</a>
+  <div class="sb-section">الحساب</div>
+  <a href="{{ url_for('sheikh_profile') }}" class="sb-link"><span>👤</span>ملفي الشخصي</a>
+  <a href="{{ url_for('logout') }}" class="sb-link"><span>🚪</span>خروج</a>
+</div>
+<div class="main">
+  {% with msgs = get_flashed_messages(with_categories=true) %}{% for cat,msg in msgs %}<div class="flash flash-{{ cat }}" style="margin-bottom:.75rem;">{{ msg }}</div>{% endfor %}{% endwith %}
+  <div style="font-family:'Amiri',serif;font-size:26px;color:var(--tx);margin-bottom:1.5rem;">إنشاء كورس جديد</div>
+  <div class="card" style="max-width:680px;">
+    <form method="POST" enctype="multipart/form-data">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">عنوان الكورس *</label>
+          <input type="text" name="title" class="form-input" placeholder="مثال: مبادئ التجويد للمبتدئين" required>
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">وصف الكورس</label>
+          <textarea name="description" class="form-input" rows="3" placeholder="وصف تفصيلي للكورس وما سيتعلمه الطالب..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">المستوى</label>
+          <select name="level" class="form-input">
+            <option>مبتدئ</option><option>متوسط</option><option>متقدم</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">التصنيف</label>
+          <select name="category" class="form-input">
+            <option>تجويد</option><option>حفظ</option><option>تفسير</option><option>قراءة</option><option>أحكام</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">السعر (ر.س) — 0 للمجاني</label>
+          <input type="number" name="price" class="form-input" value="0" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">الصورة المصغرة</label>
+          <input type="file" name="thumbnail" class="form-input" accept="image/*">
+        </div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:13px;color:var(--tx2);">
+            <input type="checkbox" name="is_free"> الكورس مجاني بالكامل
+          </label>
+        </div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:13px;color:var(--tx2);">
+            <input type="checkbox" name="is_published"> نشر الكورس الآن
+          </label>
+        </div>
+      </div>
+      <div style="display:flex;gap:.75rem;margin-top:.5rem;">
+        <button type="submit" class="btn btn-primary">إنشاء الكورس</button>
+        <a href="{{ url_for('sheikh_courses') }}" class="btn btn-ghost">إلغاء</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

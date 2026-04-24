@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}{{ current_lesson.title }}{% endblock %}
+{% block extra_head %}
+<style>
+body{display:grid;grid-template-columns:1fr 320px;grid-template-rows:auto 1fr;min-height:100vh;background:#fff;}
+.top-bar{grid-column:1/-1;background:#fff;border-bottom:0.5px solid var(--bd);padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+.top-bar .back{font-size:13px;color:var(--em);display:flex;align-items:center;gap:.35rem;}
+.top-bar h2{font-size:15px;font-weight:500;color:var(--tx);}
+.top-bar .prog{font-size:12px;color:var(--tx3);}
+.video-area{background:#0D1117;display:flex;flex-direction:column;overflow-y:auto;}
+.video-wrap{position:relative;width:100%;background:#000;}
+.video-wrap iframe,.video-wrap video{width:100%;aspect-ratio:16/9;display:block;border:none;}
+.no-video{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;color:rgba(255,255,255,0.4);}
+.no-video .ic{font-size:48px;}
+.lesson-detail{padding:1.5rem;background:#fff;flex:1;}
+.lesson-detail h2{font-size:18px;font-weight:500;margin-bottom:.5rem;}
+.lesson-detail .meta{font-size:12px;color:var(--tx3);margin-bottom:1rem;}
+.lesson-detail p{font-size:14px;color:var(--tx2);line-height:1.8;}
+.materials{margin-top:1.25rem;}
+.materials h3{font-size:14px;font-weight:500;margin-bottom:.65rem;}
+.mat-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;border:0.5px solid var(--bd);border-radius:8px;font-size:13px;color:var(--em);margin-bottom:.4rem;transition:background .2s;}
+.mat-item:hover{background:var(--em-bg);}
+.mark-btn{margin-top:1.25rem;padding-top:1.25rem;border-top:0.5px solid var(--bd);}
+.sidebar{background:var(--bg);border-right:0.5px solid var(--bd);overflow-y:auto;}
+.sidebar-hdr{padding:.9rem 1rem;border-bottom:0.5px solid var(--bd);font-size:13px;font-weight:500;color:var(--tx);background:#fff;position:sticky;top:0;}
+.prog-summary{padding:.5rem 1rem;background:#fff;border-bottom:0.5px solid var(--bd);font-size:12px;color:var(--tx3);}
+.prog-mini{height:3px;background:var(--bd);border-radius:2px;margin-top:.3rem;}
+.prog-mini-fill{height:100%;background:linear-gradient(90deg,var(--em),var(--em-l));border-radius:2px;}
+.lesson-item{display:flex;align-items:center;gap:.7rem;padding:.7rem 1rem;border-bottom:0.5px solid var(--bd);cursor:pointer;transition:background .15s;text-decoration:none;color:inherit;}
+.lesson-item:hover{background:var(--em-bg);}
+.lesson-item.active{background:var(--em-bg);border-right:2px solid var(--em);}
+.lesson-num{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.ln-done{background:var(--em-bg);color:var(--em);border:0.5px solid var(--em-bd);}
+.ln-active{background:var(--em);color:#fff;}
+.ln-pending{background:var(--bg3);color:var(--tx3);border:0.5px solid var(--bd);}
+.lesson-item h4{font-size:13px;font-weight:400;color:var(--tx);line-height:1.35;}
+.lesson-item .dur{font-size:11px;color:var(--tx3);margin-top:.15rem;}
+</style>
+{% endblock %}
+{% block body %}
+<div class="top-bar">
+  <a href="{{ url_for('course_detail', course_id=course.id) }}" class="back">← {{ course.title }}</a>
+  <h2>{{ current_lesson.title }}</h2>
+  <div class="prog">{{ get_progress_pct(course.id, current_user.id) }}% مكتمل</div>
+</div>
+
+<div class="video-area">
+  <div class="video-wrap">
+    {% if current_lesson.video_path %}
+    <video controls>
+      <source src="{{ url_for('static', filename=current_lesson.video_path) }}" type="video/mp4">
+    </video>
+    {% elif current_lesson.video_url %}
+    <iframe src="{{ current_lesson.video_url }}" allowfullscreen></iframe>
+    {% else %}
+    <div class="no-video">
+      <div class="ic">🎬</div>
+      <p style="font-size:14px;">لم يُرفع فيديو لهذا الدرس بعد</p>
+    </div>
+    {% endif %}
+  </div>
+  <div class="lesson-detail">
+    <h2>{{ current_lesson.title }}</h2>
+    <div class="meta">
+      {% if current_lesson.duration %}⏱ {{ current_lesson.duration }}{% endif %}
+      {% if current_lesson.is_free_preview %} · <span class="badge badge-em">مجاني</span>{% endif %}
+    </div>
+    {% if current_lesson.description %}
+    <p>{{ current_lesson.description }}</p>
+    {% endif %}
+    {% if current_lesson.materials %}
+    <div class="materials">
+      <h3>📎 المرفقات</h3>
+      {% for mat in current_lesson.materials %}
+      <a href="{{ url_for('static', filename=mat.file_path) }}" class="mat-item" target="_blank" download>
+        📄 {{ mat.title }}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="mark-btn" id="markArea">
+      {% if current_lesson.id in progress_ids %}
+      <span class="badge badge-em" style="padding:.4rem .9rem;font-size:13px;">✓ درس مكتمل</span>
+      {% else %}
+      <button class="btn btn-primary" id="markBtn" onclick="markComplete({{ current_lesson.id }})">
+        ✓ تحديد كمكتمل
+      </button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="sidebar">
+  <div class="sidebar-hdr">محتوى الكورس</div>
+  <div class="prog-summary">
+    {{ progress_ids|length }} / {{ lessons|length }} دروس مكتملة
+    <div class="prog-mini"><div class="prog-mini-fill" style="width:{{ get_progress_pct(course.id, current_user.id) }}%"></div></div>
+  </div>
+  {% for lesson in lessons %}
+  <a href="{{ url_for('learn', course_id=course.id, lesson_id=lesson.id) }}" 
+     class="lesson-item {% if lesson.id == current_lesson.id %}active{% endif %}">
+    <div class="lesson-num {% if lesson.id == current_lesson.id %}ln-active{% elif lesson.id in progress_ids %}ln-done{% else %}ln-pending{% endif %}">
+      {% if lesson.id in progress_ids and lesson.id != current_lesson.id %}✓{% else %}{{ lesson.order_num }}{% endif %}
+    </div>
+    <div>
+      <h4>{{ lesson.title }}</h4>
+      <div class="dur">
+        {% if lesson.video_path or lesson.video_url %}🎬{% else %}📄{% endif %}
+        {% if lesson.duration %} {{ lesson.duration }}{% endif %}
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+<script>
+function markComplete(lessonId){
+  fetch('/mark_complete/'+lessonId,{method:'POST',headers:{'Content-Type':'application/json'}})
+    .then(r=>r.json()).then(d=>{
+      if(d.success){
+        document.getElementById('markBtn').outerHTML='<span class="badge badge-em" style="padding:.4rem .9rem;font-size:13px;">✓ درس مكتمل</span>';
+        setTimeout(()=>location.reload(),500);
+      }
+    });
+}
+</script>
+{% endblock %}

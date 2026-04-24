@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}تواصل معنا{% endblock %}
+{% block extra_head %}
+<style>
+nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2.5rem;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--bd);position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:.65rem;}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--em),var(--em-l));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo h1{font-family:'Amiri',serif;font-size:18px;color:var(--gold);}
+.main{max-width:900px;margin:0 auto;padding:3rem 2rem;}
+.page-hdr{text-align:center;margin-bottom:3rem;}
+.page-hdr h2{font-family:'Amiri',serif;font-size:38px;color:var(--tx);margin-bottom:.5rem;}
+.page-hdr h2 span{color:var(--em);}
+.page-hdr p{font-size:16px;color:var(--tx2);}
+.sec-tag{display:inline-block;background:var(--em-bg);border:0.5px solid var(--em-bd);color:var(--em);font-size:12px;padding:.25rem .85rem;border-radius:100px;margin-bottom:.75rem;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;}
+.contact-card{background:#fff;border:0.5px solid var(--bd);border-radius:16px;padding:1.5rem;display:flex;align-items:center;gap:1.1rem;transition:all .2s;}
+.contact-card:hover{border-color:var(--em-bd);transform:translateY(-2px);box-shadow:0 4px 16px rgba(27,94,59,0.08);}
+.contact-card.full{grid-column:1/-1;}
+.cc-ic{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.cc-em{background:var(--em-bg);border:0.5px solid var(--em-bd);}
+.cc-go{background:var(--gold-bg);border:0.5px solid var(--gold-bd);}
+.cc-bl{background:#eff6ff;border:0.5px solid #bfdbfe;}
+.cc-gr{background:#f0fdf4;border:0.5px solid #bbf7d0;}
+.cc-info h3{font-size:15px;font-weight:500;color:var(--tx);margin-bottom:.2rem;}
+.cc-info p{font-size:13px;color:var(--tx3);margin-bottom:.35rem;}
+.cc-info a{font-size:15px;color:var(--em);font-weight:500;transition:color .2s;}
+.cc-info a:hover{color:var(--em-l);}
+.sheikh-banner{background:#fff;border:0.5px solid var(--bd);border-radius:18px;padding:2rem;display:flex;gap:2rem;align-items:center;margin-bottom:2rem;}
+.sheikh-photo{width:110px;height:110px;border-radius:50%;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,var(--em-bg),var(--em-bd));display:flex;align-items:center;justify-content:center;font-size:40px;border:3px solid var(--em-bd);}
+.sheikh-photo img{width:100%;height:100%;object-fit:cover;}
+.sheikh-details h2{font-family:'Amiri',serif;font-size:26px;color:var(--tx);margin-bottom:.3rem;}
+.sheikh-details .title{font-size:14px;color:var(--em);margin-bottom:.6rem;}
+.sheikh-details .bio{font-size:14px;color:var(--tx2);line-height:1.8;}
+.no-contact{text-align:center;padding:3rem;background:var(--bg3);border-radius:12px;color:var(--tx3);}
+.no-contact .ic{font-size:48px;margin-bottom:.75rem;}
+footer{background:#fff;border-top:0.5px solid var(--bd);padding:1.5rem 2.5rem;text-align:center;font-size:13px;color:var(--tx3);}
+</style>
+{% endblock %}
+{% block body %}
+<nav>
+  <div class="logo"><div class="logo-icon">📖</div><h1>نور القرآن</h1></div>
+  <div style="display:flex;gap:1.5rem;align-items:center;">
+    <a href="{{ url_for('index') }}" style="font-size:14px;color:var(--tx2);">الرئيسية</a>
+    <a href="{{ url_for('courses_list') }}" style="font-size:14px;color:var(--tx2);">الكورسات</a>
+  </div>
+  <div style="display:flex;gap:.6rem;">
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-sm">لوحة التحكم</a>
+    {% else %}
+      <a href="{{ url_for('login') }}" class="btn btn-ghost btn-sm">دخول</a>
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">إنشاء حساب</a>
+    {% endif %}
+  </div>
+</nav>
+
+<div class="main">
+  <div class="page-hdr">
+    <div class="sec-tag">تواصل معنا</div>
+    <h2>كيف يمكنك <span>التواصل معنا</span>؟</h2>
+    <p>نحن هنا للإجابة على استفساراتك ومساعدتك في رحلة تعلم القرآن الكريم</p>
+  </div>
+
+  {% if sheikh %}
+    <!-- بطاقة الشيخ -->
+    <div class="sheikh-banner">
+      <div class="sheikh-photo">
+        {% if sheikh.avatar %}
+          <img src="{{ url_for('static', filename=sheikh.avatar) }}" alt="{{ sheikh.name }}">
+        {% else %}
+          👳
+        {% endif %}
+      </div>
+      <div class="sheikh-details">
+        <h2>{{ sheikh.name }}</h2>
+        <div class="title">مقرئ ومعلم القرآن الكريم</div>
+        {% if sheikh.bio %}<div class="bio">{{ sheikh.bio }}</div>{% endif %}
+      </div>
+    </div>
+
+    <!-- بطاقات التواصل -->
+    {% set has_any = sheikh.phone or sheikh.whatsapp or sheikh.telegram or sheikh.email %}
+    {% if has_any %}
+    <div class="grid">
+      {% if sheikh.phone %}
+      <div class="contact-card">
+        <div class="cc-ic cc-em">📞</div>
+        <div class="cc-info">
+          <h3>الهاتف</h3>
+          <p>للتواصل المباشر</p>
+          <a href="tel:{{ sheikh.phone }}">{{ sheikh.phone }}</a>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if sheikh.whatsapp %}
+      <div class="contact-card">
+        <div class="cc-ic cc-gr">📱</div>
+        <div class="cc-info">
+          <h3>واتساب</h3>
+          <p>تواصل سريع عبر واتساب</p>
+          <a href="https://wa.me/{{ sheikh.whatsapp | replace('+','') | replace(' ','') }}" target="_blank">{{ sheikh.whatsapp }}</a>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if sheikh.telegram %}
+      <div class="contact-card">
+        <div class="cc-ic cc-bl">✈️</div>
+        <div class="cc-info">
+          <h3>تيليجرام</h3>
+          <p>تابعنا على تيليجرام</p>
+          <a href="https://t.me/{{ sheikh.telegram | replace('@','') }}" target="_blank">{{ sheikh.telegram }}</a>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if sheikh.email %}
+      <div class="contact-card">
+        <div class="cc-ic cc-go">📧</div>
+        <div class="cc-info">
+          <h3>البريد الإلكتروني</h3>
+          <p>للاستفسارات التفصيلية</p>
+          <a href="mailto:{{ sheikh.email }}">{{ sheikh.email }}</a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- أزرار التواصل السريع -->
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.5rem;">
+      {% if sheikh.whatsapp %}
+      <a href="https://wa.me/{{ sheikh.whatsapp | replace('+','') | replace(' ','') }}" target="_blank"
+         class="btn btn-primary" style="padding:.85rem 2rem;font-size:15px;">
+        📱 تواصل عبر واتساب
+      </a>
+      {% endif %}
+      {% if sheikh.email %}
+      <a href="mailto:{{ sheikh.email }}" class="btn btn-ghost" style="padding:.85rem 2rem;font-size:15px;">
+        📧 راسلنا بالبريد
+      </a>
+      {% endif %}
+      {% if sheikh.telegram %}
+      <a href="https://t.me/{{ sheikh.telegram | replace('@','') }}" target="_blank"
+         class="btn btn-ghost" style="padding:.85rem 2rem;font-size:15px;">
+        ✈️ قناة تيليجرام
+      </a>
+      {% endif %}
+    </div>
+
+    {% else %}
+    <div class="no-contact">
+      <div class="ic">📞</div>
+      <p>لم يتم إضافة بيانات التواصل بعد.</p>
+      {% if current_user.is_authenticated and current_user.role == 'sheikh' %}
+      <a href="{{ url_for('sheikh_profile') }}" class="btn btn-primary" style="margin-top:1rem;">أضف بيانات التواصل</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  {% else %}
+  <div class="no-contact">
+    <div class="ic">🔍</div>
+    <p>لا توجد بيانات تواصل متاحة حالياً.</p>
+  </div>
+  {% endif %}
+</div>
+
+<footer>جميع الحقوق محفوظة © ١٤٤٦ هـ · منصة نور القرآن</footer>
+{% endblock %}
