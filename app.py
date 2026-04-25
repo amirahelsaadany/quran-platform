@@ -5,19 +5,26 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os, uuid
+import os
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'quran-platform-secret-key-2024'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quran_platform.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+if app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgres://"):
+    app.config["SQLALCHEMY_DATABASE_URI"] = app.config["SQLALCHEMY_DATABASE_URI"].replace("postgres://", "postgresql://", 1)
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB
+
 
 ALLOWED_VIDEO = {'mp4', 'webm', 'mkv', 'avi', 'mov'}
 ALLOWED_IMG = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
 ALLOWED_FILE = {'pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt', 'zip'}
 
 db = SQLAlchemy(app)
+with app.app_context():
+    db.create_all()
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
