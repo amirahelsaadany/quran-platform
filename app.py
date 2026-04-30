@@ -5,26 +5,35 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os, uuid
-import os
-
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'quran-platform-secret-key-2024'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
+
+# ─── Secret Key ───────────────────────────────────────────
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'quran-platform-secret-key-2024-change-in-production')
+
+# ─── Database ─────────────────────────────────────────────
+# محلياً: يستخدم SQLite تلقائياً
+# على Railway/Render: يستخدم PostgreSQL تلقائياً عبر متغير DATABASE_URL
+DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///quran_platform.db')
+# Railway يرسل postgres:// لكن SQLAlchemy يحتاج postgresql://
+if DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-if app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgres://"):
-    app.config["SQLALCHEMY_DATABASE_URI"] = app.config["SQLALCHEMY_DATABASE_URI"].replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 300,
+}
+
+# ─── Uploads ──────────────────────────────────────────────
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB
-
 
 ALLOWED_VIDEO = {'mp4', 'webm', 'mkv', 'avi', 'mov'}
 ALLOWED_IMG = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
 ALLOWED_FILE = {'pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt', 'zip'}
 
 db = SQLAlchemy(app)
-with app.app_context():
-    db.create_all()
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -587,12 +596,12 @@ def init_db():
         db.create_all()
         if not User.query.filter_by(email='sheikh@quran.com').first():
             sheikh = User(
-                name='الشيخ نظمي السعدني',
+                name='الشيخ عبدالرحمن الحسيني',
                 email='sheikh@quran.com',
                 password=generate_password_hash('sheikh123'),
                 role='sheikh',
                 bio='مقرئ متخصص برواية حفص عن عاصم، حاصل على إجازة بالسند المتصل',
-                country='جمهورية مصر العربية'
+                country='المملكة العربية السعودية'
             )
             db.session.add(sheikh)
             db.session.commit()
@@ -615,6 +624,10 @@ def init_db():
             print("✅ Database initialized with demo data")
             print("👤 Sheikh login: sheikh@quran.com / sheikh123")
 
+# ─── تهيئة تلقائية عند أول تشغيل ─────────────────────────
+# يعمل سواء كانت SQLite أو PostgreSQL
+init_db()
+
 if __name__ == '__main__':
-    init_db()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=os.environ.get('FLASK_DEBUG', 'true').lower() == 'true',
+            host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))

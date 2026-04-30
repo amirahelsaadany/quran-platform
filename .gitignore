@@ -1,8 +1,15 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
+.venv/
+venv/
+
+# Database (محلي فقط)
 instance/
 *.db
+
+# Uploaded files (لا ترفعها على GitHub)
 static/uploads/videos/*
 static/uploads/thumbnails/*
 static/uploads/materials/*
@@ -11,6 +18,11 @@ static/uploads/avatars/*
 !static/uploads/thumbnails/.gitkeep
 !static/uploads/materials/.gitkeep
 !static/uploads/avatars/.gitkeep
+
+# Environment
 .env
-venv/
-.venv/
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
