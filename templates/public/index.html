@@ -183,7 +183,11 @@ footer a:hover{color:#FFD700;}
   <div class="hero-content">
     <div class="hero-badge"><span class="dot"></span> القرآن الكريم بالقراءات العشر إفراداً وجمعاً</div>
     <h2>تعلم القرآن<br>مع <span>أفضل المقرئين</span></h2>
-    <p>{{ "منصة متكاملة للتعلم والحفظ والإجازة بالقراءات العشر افرادا وجمعا، مع نور القران نسعى لتقريب القران الكريم الى قلبك من خلال تجربة تعريمية مبتكرة ومميزة ، مع مجموعة من أكفئ المعلمين حاصلين على اجازات و أسانيد عالية." }}</p>
+<<<<<<< HEAD
+
+    <p>{{ "منصة متكاملة لتعلم وحفظ القرآن الكريم والقراءات العشر بإشراف نخبة من المعلمين المجازين بأسانيد عالية، نقدم تجربة تعليمية مميزة تقرب القرآن إلى قلبك.
+" }}</p>
+>>>>>>> 160f904 (dd)
     <div class="hero-btns">
       <a href="{{ url_for('register') }}" class="btn-hero-primary">✨ ابدأ رحلتك الآن</a>
       <a href="{{ url_for('courses_list') }}" class="btn-hero-ghost">تصفح الدروس</a>
@@ -207,16 +211,24 @@ footer a:hover{color:#FFD700;}
           </div>
         {% endif %}
         <div class="sheikh-overlay">
-          <div class="sheikh-arabic">﴿ اقْرَأْ بِاسْمِ رَبِّكَ ﴾</div>
+          <div class="sheikh-arabic"></div>
         </div>
       </div>
       <div class="sheikh-info">
         <div class="sheikh-name">{% if sheikh %}{{ sheikh.name }}{% else %}الشيخ المقرئ{% endif %}</div>
+<<<<<<< HEAD
         <div class="sheikh-title">مقرئ ومعلم القرآن الكريم</div>
         {% if sheikh and sheikh.bio %}
         <div class="sheikh-bio">{{ sheikh.bio }}</div>
         {% endif %}
         <div class="sheikh-badge">🟢 متاح للتسجيل الآن</div>
+=======
+
+        {% if sheikh and sheikh.bio %}
+        <div class="sheikh-bio">{{ sheikh.bio }}</div>
+        {% endif %}
+
+>>>>>>> 160f904 (dd)
       </div>
     </div>
   </div>
@@ -317,10 +329,25 @@ footer a:hover{color:#FFD700;}
   <div style="display:flex;flex-direction:column;gap:.85rem;max-width:720px;margin:0 auto;">
     {% for ann in announcements %}
     <div class="ann-item reveal">
+<<<<<<< HEAD
       <h4>{{ ann.title }}</h4>
       <p>{{ ann.content }}</p>
       <div class="dt">📅 {{ ann.created_at.strftime('%Y-%m-%d') }}</div>
     </div>
+=======
+
+  {% if ann.image %}
+    <img src="{{ url_for('static', filename=ann.image) }}"
+         alt="{{ ann.title }}"
+         style="width:100%; border-radius:12px; margin-bottom:12px; object-fit:cover; max-height:300px;">
+  {% endif %}
+
+  <h4>{{ ann.title }}</h4>
+  <p>{{ ann.content }}</p>
+  <div class="dt">📅 {{ ann.created_at.strftime('%Y-%m-%d') }}</div>
+
+</div>
+>>>>>>> 160f904 (dd)
     {% endfor %}
   </div>
 </div>
