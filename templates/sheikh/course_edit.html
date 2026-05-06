@@ -6,32 +6,32 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
 .sidebar{background:#fff;border-left:0.5px solid var(--bd);padding:1.5rem 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
 .sb-logo{padding:0 1.25rem 1.5rem;border-bottom:0.5px solid var(--bd);}
 .sb-logo .ic{width:38px;height:38px;background:linear-gradient(135deg,var(--em),var(--em-l));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;}
-.sb-logo h2{font-family:'Amiri',serif;font-size:16px;color:var(--gold);margin-top:.5rem;}
-.sb-link{display:flex;align-items:center;gap:.65rem;padding:.6rem 1.25rem;font-size:13px;color:var(--tx2);transition:all .15s;border-right:2px solid transparent;}
+.sb-logo h2{font-family:'Amiri',serif;font-size:20px;color:var(--gold);margin-top:.5rem;}
+.sb-link{display:flex;align-items:center;justify-content:flex-start;gap:.65rem;padding:.75rem 1.25rem;font-size:16px;color:var(--tx2);transition:all .15s;border-right:2px solid transparent;}
 .sb-link:hover,.sb-link.active{background:var(--em-bg);color:var(--em);border-right-color:var(--em);}
-.sb-section{padding:.75rem 1.25rem .25rem;font-size:10px;color:var(--tx3);letter-spacing:.5px;}
+.sb-section{padding:.75rem 1.25rem .25rem;font-size:16px;color:var(--tx3);letter-spacing:.5px;}
 .main{background:var(--bg);padding:2rem;overflow-y:auto;}
 .page-title{font-family:'Amiri',serif;font-size:26px;color:var(--tx);margin-bottom:1.5rem;}
 .tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;border-bottom:0.5px solid var(--bd);padding-bottom:0;}
-.tab-btn{padding:.55rem 1.1rem;font-size:13px;font-family:'Tajawal',sans-serif;background:transparent;border:none;cursor:pointer;color:var(--tx2);border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all .2s;}
+.tab-btn{padding:.55rem 1.1rem;font-size:16px;font-family:'Tajawal',sans-serif;background:transparent;border:none;cursor:pointer;color:var(--tx2);border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all .2s;}
 .tab-btn.active{color:var(--em);border-bottom-color:var(--em);font-weight:500;}
 .tab-content{display:none;}.tab-content.active{display:block;}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
 .lesson-card{background:#fff;border:0.5px solid var(--bd);border-radius:12px;padding:1rem 1.1rem;margin-bottom:.75rem;display:flex;align-items:center;gap:.85rem;}
-.lesson-num{width:32px;height:32px;background:var(--em-bg);border:0.5px solid var(--em-bd);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--em);flex-shrink:0;}
+.lesson-num{width:32px;height:32px;background:var(--em-bg);border:0.5px solid var(--em-bd);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--em);flex-shrink:0;}
 .lesson-info{flex:1;}
-.lesson-info h4{font-size:13px;font-weight:500;color:var(--tx);}
-.lesson-info .meta{font-size:11px;color:var(--tx3);}
+.lesson-info h4{font-size:16px;font-weight:500;color:var(--tx);}
+.lesson-info .meta{font-size:16px;color:var(--tx3);}
 .add-lesson-form{background:#fff;border:0.5px solid var(--bd);border-radius:14px;padding:1.5rem;margin-top:1.25rem;}
-.add-lesson-form h3{font-size:15px;font-weight:500;margin-bottom:1.25rem;color:var(--tx);}
+.add-lesson-form h3{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:var(--tx);}
 .upload-area{border:1.5px dashed var(--bd2);border-radius:10px;padding:2rem;text-align:center;cursor:pointer;transition:all .2s;}
 .upload-area:hover{border-color:var(--em);background:var(--em-bg);}
 .upload-area .ic{font-size:28px;margin-bottom:.5rem;}
-.upload-area p{font-size:13px;color:var(--tx2);}
-.upload-area small{font-size:11px;color:var(--tx3);}
+.upload-area p{font-size:16px;color:var(--tx2);}
+.upload-area small{font-size:16px;color:var(--tx3);}
 .student-row{display:flex;align-items:center;justify-content:space-between;padding:.65rem;border:0.5px solid var(--bd);border-radius:8px;background:#fff;margin-bottom:.5rem;}
-.student-row .name{font-size:13px;font-weight:500;}
-.student-row .meta{font-size:11px;color:var(--tx3);}
+.student-row .name{font-size:16px;font-weight:500;}
+.student-row .meta{font-size:16px;color:var(--tx3);}
 .progress-bar{height:4px;background:var(--bg3);border-radius:2px;margin-top:.3rem;min-width:80px;}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--em),var(--em-l));border-radius:2px;}
 </style>
@@ -59,7 +59,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
     <div>
       <div class="page-title" style="margin-bottom:.2rem;">{{ course.title }}</div>
-      <div style="font-size:13px;color:var(--tx2);">تعديل الكورس وإدارة الدروس</div>
+      <div style="font-size:16px;color:var(--tx2);">تعديل الكورس وإدارة الدروس</div>
     </div>
     <div style="display:flex;gap:.5rem;">
       <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-ghost btn-sm" target="_blank">معاينة</a>
@@ -111,15 +111,15 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
           <div class="form-group">
             <label class="form-label">الصورة المصغرة</label>
             <input type="file" name="thumbnail" class="form-input" accept="image/*">
-            {% if course.thumbnail %}<div style="margin-top:.35rem;font-size:11px;color:var(--em);">✓ يوجد صورة</div>{% endif %}
+            {% if course.thumbnail %}<div style="margin-top:.35rem;font-size:16px;color:var(--em);">✓ يوجد صورة</div>{% endif %}
           </div>
           <div class="form-group">
-            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:13px;color:var(--tx2);">
+            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:16px;color:var(--tx2);">
               <input type="checkbox" name="is_free" {% if course.is_free %}checked{% endif %}> مجاني
             </label>
           </div>
           <div class="form-group">
-            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:13px;color:var(--tx2);">
+            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:16px;color:var(--tx2);">
               <input type="checkbox" name="is_published" {% if course.is_published %}checked{% endif %}> منشور للعامة
             </label>
           </div>
@@ -132,7 +132,11 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
   <div id="tab-lessons" class="tab-content">
     {% for lesson in lessons %}
     <div class="lesson-card">
+      {% if lesson.thumbnail %}
+      <img src="{{ url_for('static', filename=lesson.thumbnail) }}" style="width:60px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;" alt="صورة الدرس">
+      {% else %}
       <div class="lesson-num">{{ lesson.order_num }}</div>
+      {% endif %}
       <div class="lesson-info">
         <h4>{{ lesson.title }}</h4>
         <div class="meta">
@@ -147,7 +151,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
       </form>
     </div>
     {% else %}
-    <p style="color:var(--tx3);font-size:13px;padding:.5rem 0;">لا توجد دروس بعد. أضف درساً أدناه.</p>
+    <p style="color:var(--tx3);font-size:16px;padding:.5rem 0;">لا توجد دروس بعد. أضف درساً أدناه.</p>
     {% endfor %}
 
     <div class="add-lesson-form">
@@ -163,6 +167,16 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
             <textarea name="description" class="form-input" rows="2" placeholder="وصف مختصر للدرس..."></textarea>
           </div>
           <div class="form-group">
+            <label class="form-label">صورة الدرس 🖼</label>
+            <div class="upload-area" onclick="document.getElementById('lessonThumb').click()">
+              <div class="ic">🖼</div>
+              <p>اضغط لاختيار صورة للدرس</p>
+              <small>JPG, PNG, WEBP</small>
+            </div>
+            <input type="file" id="lessonThumb" name="lesson_thumbnail" accept="image/*" style="display:none" onchange="showFileName(this,'thumbName')">
+            <div id="thumbName" style="font-size:16px;color:var(--em);margin-top:.3rem;"></div>
+          </div>
+          <div class="form-group">
             <label class="form-label">رفع فيديو (MP4, WebM...)</label>
             <div class="upload-area" onclick="document.getElementById('videoFile').click()">
               <div class="ic">🎥</div>
@@ -170,7 +184,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
               <small>حد أقصى 500MB</small>
             </div>
             <input type="file" id="videoFile" name="video" accept="video/*" style="display:none" onchange="showFileName(this,'videoName')">
-            <div id="videoName" style="font-size:11px;color:var(--em);margin-top:.3rem;"></div>
+            <div id="videoName" style="font-size:16px;color:var(--em);margin-top:.3rem;"></div>
           </div>
           <div class="form-group">
             <label class="form-label">أو رابط فيديو (YouTube/...)</label>
@@ -188,10 +202,10 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
               <small>PDF, DOC, PPT, ZIP</small>
             </div>
             <input type="file" id="matFile" name="material" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.zip" style="display:none" onchange="showFileName(this,'matName')">
-            <div id="matName" style="font-size:11px;color:var(--em);margin-top:.3rem;"></div>
+            <div id="matName" style="font-size:16px;color:var(--em);margin-top:.3rem;"></div>
           </div>
           <div class="form-group">
-            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:13px;color:var(--tx2);">
+            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:16px;color:var(--tx2);">
               <input type="checkbox" name="is_free_preview"> معاينة مجانية (بدون تسجيل)
             </label>
           </div>
@@ -210,7 +224,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
         <div class="progress-bar"><div class="progress-fill" style="width:{{ get_progress_pct(course.id, e.student_id) }}%"></div></div>
       </div>
       <div style="display:flex;gap:.5rem;align-items:center;">
-        <span style="font-size:12px;color:var(--tx3);">{{ get_progress_pct(course.id, e.student_id) }}%</span>
+        <span style="font-size:17px;color:var(--tx3);">{{ get_progress_pct(course.id, e.student_id) }}%</span>
         {% if not e.is_approved %}
           <form action="{{ url_for('approve_enrollment', enroll_id=e.id) }}" method="POST">
             <button class="btn btn-primary btn-sm">قبول</button>
@@ -221,7 +235,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
       </div>
     </div>
     {% else %}
-    <p style="color:var(--tx3);font-size:13px;padding:1rem 0;">لا يوجد طلاب مسجلون بعد.</p>
+    <p style="color:var(--tx3);font-size:16px;padding:1rem 0;">لا يوجد طلاب مسجلون بعد.</p>
     {% endfor %}
   </div>
 </div>

@@ -9,23 +9,23 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 
 .main{display:grid;grid-template-columns:1fr 340px;gap:2.5rem;padding:2.5rem;align-items:start;}
 .course-header{margin-bottom:1.5rem;}
 .course-header h1{font-family:'Amiri',serif;font-size:32px;color:var(--tx);margin-bottom:.5rem;}
-.course-header .desc{font-size:15px;color:var(--tx2);line-height:1.85;margin-bottom:1rem;}
+.course-header .desc{font-size:17px;color:var(--tx2);line-height:1.85;margin-bottom:1rem;}
 .meta-row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem;}
-.meta-item{font-size:12px;color:var(--tx3);display:flex;align-items:center;gap:.3rem;}
+.meta-item{font-size:17px;color:var(--tx3);display:flex;align-items:center;gap:.3rem;}
 .lessons-list{background:#fff;border:0.5px solid var(--bd);border-radius:14px;overflow:hidden;}
-.lessons-hdr{padding:.9rem 1.1rem;border-bottom:0.5px solid var(--bd);font-size:14px;font-weight:500;}
+.lessons-hdr{padding:.9rem 1.1rem;border-bottom:0.5px solid var(--bd);font-size:17px;font-weight:500;}
 .lesson-row{display:flex;align-items:center;gap:.75rem;padding:.7rem 1.1rem;border-bottom:0.5px solid var(--bd);transition:background .15s;}
 .lesson-row:last-child{border-bottom:none;}
 .lesson-row:hover{background:var(--bg);}
-.l-num{width:28px;height:28px;border-radius:7px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--tx3);flex-shrink:0;}
-.l-title{font-size:13px;color:var(--tx);flex:1;}
-.l-dur{font-size:11px;color:var(--tx3);}
+.l-num{width:28px;height:28px;border-radius:7px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:var(--tx3);flex-shrink:0;}
+.l-title{font-size:16px;color:var(--tx);flex:1;}
+.l-dur{font-size:16px;color:var(--tx3);}
 .sidebar-card{background:#fff;border:0.5px solid var(--bd);border-radius:16px;overflow:hidden;position:sticky;top:80px;}
 .thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#1B3A2D,#2D5A40);display:flex;align-items:center;justify-content:center;font-size:48px;}
 .card-body{padding:1.25rem;}
 .price-tag{font-size:28px;font-weight:700;color:var(--em);margin-bottom:1rem;}
 .card-meta{margin-bottom:1.25rem;}
-.card-meta .row{display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:0.5px solid var(--bd);font-size:13px;}
+.card-meta .row{display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:0.5px solid var(--bd);font-size:16px;}
 .card-meta .row:last-child{border-bottom:none;}
 .card-meta .row .lbl{color:var(--tx3);}
 .card-meta .row .val{color:var(--tx);font-weight:500;}
@@ -46,7 +46,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 
 <div class="main">
   <div>
     {% with msgs = get_flashed_messages(with_categories=true) %}{% for cat,msg in msgs %}<div class="flash flash-{{ cat }}" style="margin-bottom:.75rem;">{{ msg }}</div>{% endfor %}{% endwith %}
-    <div style="font-size:12px;color:var(--tx3);margin-bottom:.75rem;">
+    <div style="font-size:17px;color:var(--tx3);margin-bottom:.75rem;">
       <a href="{{ url_for('courses_list') }}" style="color:var(--em);">الكورسات</a> ← {{ course.title }}
     </div>
     <div class="course-header">
@@ -68,13 +68,13 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 
         <div class="l-num">{{ lesson.order_num }}</div>
         <div style="flex:1;">
           <div class="l-title">{{ lesson.title }}</div>
-          {% if lesson.description %}<div style="font-size:11px;color:var(--tx3);">{{ lesson.description[:60] }}</div>{% endif %}
+          {% if lesson.description %}<div style="font-size:16px;color:var(--tx3);">{{ lesson.description[:60] }}</div>{% endif %}
         </div>
         {% if lesson.duration %}<div class="l-dur">{{ lesson.duration }}</div>{% endif %}
         {% if lesson.is_free_preview %}<span class="badge badge-em">مجاني</span>{% endif %}
       </div>
       {% else %}
-      <div style="padding:1.5rem;text-align:center;color:var(--tx3);font-size:13px;">لا توجد دروس بعد.</div>
+      <div style="padding:1.5rem;text-align:center;color:var(--tx3);font-size:16px;">لا توجد دروس بعد.</div>
       {% endfor %}
     </div>
   </div>
@@ -82,19 +82,50 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 
     <div class="sidebar-card">
       <div class="thumb">📚</div>
       <div class="card-body">
-        <div class="price-tag">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ر.س{% endif %}</div>
+        {% set currency = get_currency(current_user.country) if current_user.is_authenticated else 'ر.س' %}
+        <div class="price-tag">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} {{ currency }}{% endif %}</div>
         {% if enrollment and enrollment.is_approved %}
-          <a href="{{ url_for('learn', course_id=course.id) }}" class="btn btn-primary" style="width:100%;justify-content:center;padding:.8rem;font-size:14px;">▶ متابعة التعلم</a>
+          <a href="{{ url_for('learn', course_id=course.id) }}" class="btn btn-primary" style="width:100%;justify-content:center;padding:.9rem;font-size:16px;">▶ متابعة التعلم</a>
         {% elif enrollment %}
-          <div class="btn" style="width:100%;justify-content:center;padding:.8rem;font-size:13px;background:var(--gold-bg);color:var(--gold);border:0.5px solid var(--gold-bd);">⏳ في انتظار الموافقة</div>
+          <div class="btn" style="width:100%;justify-content:center;padding:.9rem;font-size:17px;background:var(--gold-bg);color:var(--gold);border:0.5px solid var(--gold-bd);">⏳ في انتظار الموافقة</div>
         {% elif current_user.is_authenticated %}
           <form method="POST" action="{{ url_for('enroll', course_id=course.id) }}">
-            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:.8rem;font-size:14px;">
+            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:.9rem;font-size:16px;">
               {% if course.is_free or course.price==0 %}التسجيل المجاني{% else %}التسجيل في الكورس{% endif %}
             </button>
           </form>
+          {% if not (course.is_free or course.price==0) %}
+          <div style="margin-top:1.25rem;background:var(--gold-bg);border:1px solid var(--gold-bd);border-radius:12px;padding:1.1rem;">
+            <div style="font-size:17px;font-weight:700;color:var(--gold);margin-bottom:.75rem;">💳 طريقة الدفع</div>
+            {% set sh = course.sheikh %}
+            {% if sh.bank_name or sh.bank_account %}
+            <div style="margin-bottom:.6rem;">
+              <div style="font-size:17px;font-weight:600;color:var(--tx);">🏦 {{ sh.bank_name }}</div>
+              <div style="font-size:17px;color:var(--tx2);word-break:break-all;">{{ sh.bank_account }}</div>
+            </div>
+            {% endif %}
+            {% if sh.wallet_vodafone %}
+            <div style="font-size:17px;color:var(--tx2);margin-bottom:.4rem;">📱 فودافون كاش: <strong>{{ sh.wallet_vodafone }}</strong></div>
+            {% endif %}
+            {% if sh.wallet_instapay %}
+            <div style="font-size:17px;color:var(--tx2);margin-bottom:.4rem;">⚡ إنستاباي: <strong>{{ sh.wallet_instapay }}</strong></div>
+            {% endif %}
+            {% if sh.wallet_stcpay %}
+            <div style="font-size:17px;color:var(--tx2);margin-bottom:.4rem;">📲 STC Pay: <strong>{{ sh.wallet_stcpay }}</strong></div>
+            {% endif %}
+            {% if sh.wallet_other %}
+            <div style="font-size:17px;color:var(--tx2);margin-bottom:.4rem;">💰 {{ sh.wallet_other }}</div>
+            {% endif %}
+            {% if sh.payment_notes %}
+            <div style="margin-top:.75rem;padding:.7rem;background:#fff;border-radius:8px;font-size:17px;color:var(--tx2);line-height:1.8;">{{ sh.payment_notes }}</div>
+            {% endif %}
+            {% if not (sh.bank_name or sh.bank_account or sh.wallet_vodafone or sh.wallet_instapay or sh.wallet_stcpay or sh.wallet_other) %}
+            <div style="font-size:17px;color:var(--tx3);">تواصل مع الشيخ مباشرة لمعرفة طريقة الدفع.</div>
+            {% endif %}
+          </div>
+          {% endif %}
         {% else %}
-          <a href="{{ url_for('register') }}" class="btn btn-primary" style="width:100%;justify-content:center;padding:.8rem;font-size:14px;">إنشاء حساب للتسجيل</a>
+          <a href="{{ url_for('register') }}" class="btn btn-primary" style="width:100%;justify-content:center;padding:.9rem;font-size:16px;">إنشاء حساب للتسجيل</a>
         {% endif %}
         <div class="divider"></div>
         <div class="card-meta">
@@ -102,7 +133,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 
           <div class="row"><span class="lbl">التصنيف</span><span class="val">{{ course.category }}</span></div>
           <div class="row"><span class="lbl">عدد الدروس</span><span class="val">{{ lessons|length }} درس</span></div>
           <div class="row"><span class="lbl">المقرئ</span><span class="val">{{ course.sheikh.name }}</span></div>
-          <div class="row"><span class="lbl">السعر</span><span class="val">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ر.س{% endif %}</span></div>
+          <div class="row"><span class="lbl">السعر</span><span class="val">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} {{ currency }}{% endif %}</span></div>
         </div>
       </div>
     </div>

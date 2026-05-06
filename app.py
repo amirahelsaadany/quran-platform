@@ -53,6 +53,14 @@ class User(UserMixin, db.Model):
     country = db.Column(db.String(60), default='')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active_account = db.Column(db.Boolean, default=True)
+    # حقول الدفع للشيخ
+    bank_account = db.Column(db.String(200), default='')        # رقم الحساب البنكي
+    bank_name = db.Column(db.String(100), default='')           # اسم البنك
+    wallet_vodafone = db.Column(db.String(50), default='')      # فودافون كاش
+    wallet_instapay = db.Column(db.String(100), default='')     # إنستاباي
+    wallet_stcpay = db.Column(db.String(50), default='')        # STC Pay
+    wallet_other = db.Column(db.String(200), default='')        # محفظة أخرى / IBAN
+    payment_notes = db.Column(db.Text, default='')              # تعليمات الدفع
     enrollments = db.relationship('Enrollment', backref='student', lazy=True)
     progress = db.relationship('Progress', backref='student', lazy=True)
 
@@ -78,6 +86,7 @@ class Lesson(db.Model):
     description = db.Column(db.Text, default='')
     video_path = db.Column(db.String(300), default='')
     video_url = db.Column(db.String(500), default='')  # YouTube/external URL
+    thumbnail = db.Column(db.String(200), default='')  # صورة الدرس
     duration = db.Column(db.String(20), default='')
     order_num = db.Column(db.Integer, default=0)
     is_free_preview = db.Column(db.Boolean, default=False)
@@ -124,6 +133,7 @@ class Announcement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
+    image = db.Column(db.String(200), default='')   # صورة الإعلان
     sheikh_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     sheikh = db.relationship('User', backref='announcements')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -162,6 +172,45 @@ def get_progress_pct(course_id, student_id):
 
 app.jinja_env.globals['get_enrollment'] = get_enrollment
 app.jinja_env.globals['get_progress_pct'] = get_progress_pct
+
+# خريطة العملات حسب البلد
+CURRENCY_MAP = {
+    'مصر': ('جنيه', 'EGP', 'ج.م'),
+    'المملكة العربية السعودية': ('ريال سعودي', 'SAR', 'ر.س'),
+    'الإمارات العربية المتحدة': ('درهم', 'AED', 'د.إ'),
+    'الكويت': ('دينار كويتي', 'KWD', 'د.ك'),
+    'البحرين': ('دينار بحريني', 'BHD', 'د.ب'),
+    'قطر': ('ريال قطري', 'QAR', 'ر.ق'),
+    'عُمان': ('ريال عماني', 'OMR', 'ر.ع'),
+    'الأردن': ('دينار أردني', 'JOD', 'د.أ'),
+    'العراق': ('دينار عراقي', 'IQD', 'د.ع'),
+    'سوريا': ('ليرة سورية', 'SYP', 'ل.س'),
+    'لبنان': ('ليرة لبنانية', 'LBP', 'ل.ل'),
+    'ليبيا': ('دينار ليبي', 'LYD', 'د.ل'),
+    'تونس': ('دينار تونسي', 'TND', 'د.ت'),
+    'الجزائر': ('دينار جزائري', 'DZD', 'د.ج'),
+    'المغرب': ('درهم مغربي', 'MAD', 'د.م'),
+    'السودان': ('جنيه سوداني', 'SDG', 'ج.س'),
+    'اليمن': ('ريال يمني', 'YER', 'ر.ي'),
+    'فلسطين': ('شيكل', 'ILS', '₪'),
+    'موريتانيا': ('أوقية', 'MRU', 'أ.م'),
+    'الصومال': ('شلن صومالي', 'SOS', 'ش.ص'),
+    'جيبوتي': ('فرنك جيبوتي', 'DJF', 'ف.ج'),
+    'تركيا': ('ليرة تركية', 'TRY', '₺'),
+    'باكستان': ('روبية باكستانية', 'PKR', 'ر.ب'),
+    'ماليزيا': ('رينغيت', 'MYR', 'RM'),
+    'إندونيسيا': ('روبية', 'IDR', 'Rp'),
+    'نيجيريا': ('نيرة', 'NGN', '₦'),
+}
+
+def get_currency(country):
+    """إرجاع (اسم العملة، الرمز المختصر) حسب البلد"""
+    if country and country in CURRENCY_MAP:
+        return CURRENCY_MAP[country][2]   # الرمز المختصر
+    return '$'   # افتراضي
+
+app.jinja_env.globals['get_currency'] = get_currency
+app.jinja_env.globals['CURRENCY_MAP'] = CURRENCY_MAP
 
 # ─── Auth Routes ──────────────────────────────────────────
 @app.route('/login', methods=['GET', 'POST'])
@@ -424,12 +473,18 @@ def new_lesson(course_id):
         f = request.files['video']
         if allowed_file(f.filename, ALLOWED_VIDEO):
             video_path = save_file(f, 'videos')
+    lesson_thumb = ''
+    if 'lesson_thumbnail' in request.files and request.files['lesson_thumbnail'].filename:
+        f = request.files['lesson_thumbnail']
+        if allowed_file(f.filename, ALLOWED_IMG):
+            lesson_thumb = save_file(f, 'thumbnails')
     count = Lesson.query.filter_by(course_id=course_id).count()
     lesson = Lesson(
         title=request.form.get('title'),
         description=request.form.get('description', ''),
         video_path=video_path,
         video_url=request.form.get('video_url', ''),
+        thumbnail=lesson_thumb,
         duration=request.form.get('duration', ''),
         order_num=count + 1,
         is_free_preview=request.form.get('is_free_preview') == 'on',
@@ -517,9 +572,15 @@ def sheikh_announcements():
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'create':
+            ann_image = ''
+            if 'ann_image' in request.files and request.files['ann_image'].filename:
+                f = request.files['ann_image']
+                if allowed_file(f.filename, ALLOWED_IMG):
+                    ann_image = save_file(f, 'announcements')
             ann = Announcement(
                 title=request.form.get('title'),
                 content=request.form.get('content'),
+                image=ann_image,
                 sheikh_id=current_user.id
             )
             db.session.add(ann)
@@ -567,6 +628,14 @@ def sheikh_profile():
         current_user.whatsapp = request.form.get('whatsapp', current_user.whatsapp)
         current_user.telegram = request.form.get('telegram', current_user.telegram)
         current_user.bio = request.form.get('bio', current_user.bio)
+        # حقول الدفع
+        current_user.bank_account = request.form.get('bank_account', current_user.bank_account)
+        current_user.bank_name = request.form.get('bank_name', current_user.bank_name)
+        current_user.wallet_vodafone = request.form.get('wallet_vodafone', current_user.wallet_vodafone)
+        current_user.wallet_instapay = request.form.get('wallet_instapay', current_user.wallet_instapay)
+        current_user.wallet_stcpay = request.form.get('wallet_stcpay', current_user.wallet_stcpay)
+        current_user.wallet_other = request.form.get('wallet_other', current_user.wallet_other)
+        current_user.payment_notes = request.form.get('payment_notes', current_user.payment_notes)
         # Profile picture (small avatar)
         if 'avatar' in request.files and request.files['avatar'].filename:
             f = request.files['avatar']
@@ -626,6 +695,10 @@ def init_db():
 
 # ─── تهيئة تلقائية عند أول تشغيل ─────────────────────────
 # يعمل سواء كانت SQLite أو PostgreSQL
+# إنشاء مجلدات الرفع تلقائياً
+for _sub in ['thumbnails', 'videos', 'avatars', 'materials', 'announcements']:
+    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], _sub), exist_ok=True)
+
 init_db()
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;bac
     <h1>نور القرآن</h1>
   </div>
   <h2 style="font-family:'Amiri',serif;font-size:22px;color:var(--tx);margin-bottom:.2rem;">إنشاء حساب جديد</h2>
-  <p style="font-size:13px;color:var(--tx2);margin-bottom:1.35rem;">ابدأ رحلتك في تعلم القرآن الكريم</p>
+  <p style="font-size:16px;color:var(--tx2);margin-bottom:1.35rem;">ابدأ رحلتك في تعلم القرآن الكريم</p>
   {% with msgs = get_flashed_messages(with_categories=true) %}
     {% for cat, msg in msgs %}<div class="flash flash-{{ cat }}" style="margin-bottom:.5rem;">{{ msg }}</div>{% endfor %}
   {% endwith %}
@@ -47,12 +47,12 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;bac
         </select>
       </div>
     </div>
-    <button type="submit" class="btn btn-primary" style="width:100%;padding:.7rem;font-size:14px;justify-content:center;margin-top:.5rem;">إنشاء الحساب</button>
+    <button type="submit" class="btn btn-primary" style="width:100%;padding:.7rem;font-size:17px;justify-content:center;margin-top:.5rem;">إنشاء الحساب</button>
   </form>
-  <div style="text-align:center;margin-top:1.1rem;font-size:13px;color:var(--tx2);">
+  <div style="text-align:center;margin-top:1.1rem;font-size:16px;color:var(--tx2);">
     لديك حساب؟ <a href="{{ url_for('login') }}" style="color:var(--em);font-weight:500;">تسجيل الدخول</a>
   </div>
-  <div style="text-align:center;margin-top:.4rem;font-size:11px;">
+  <div style="text-align:center;margin-top:.4rem;font-size:16px;">
     <a href="{{ url_for('index') }}" style="color:var(--tx3);">← العودة للرئيسية</a>
   </div>
 </div>

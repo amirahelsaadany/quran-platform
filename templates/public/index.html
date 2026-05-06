@@ -2,100 +2,159 @@
 {% block title %}الرئيسية{% endblock %}
 {% block extra_head %}
 <style>
-nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2.5rem;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--bd);position:sticky;top:0;z-index:100;}
+/* ═══ NAV ═══ */
+nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2.5rem;background:rgba(15,50,30,0.92);backdrop-filter:blur(20px);border-bottom:0.5px solid rgba(255,255,255,0.1);position:sticky;top:0;z-index:100;}
 .logo{display:flex;align-items:center;gap:.65rem;}
-.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--em),var(--em-l));border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;}
-.logo h1{font-family:'Amiri',serif;font-size:20px;color:var(--gold);}
-.logo p{font-size:12px;color:var(--tx3);}
-.nav-links{display:flex;gap:1.75rem;}
-.nav-links a{font-size:15px;color:var(--tx2);transition:color .2s;}
-.nav-links a:hover{color:var(--em);}
-.nav-cta{display:flex;gap:.6rem;}
-.hero{display:grid;grid-template-columns:1.2fr 0.8fr;gap:3rem;align-items:center;padding:4rem 2.5rem 3.5rem;background:radial-gradient(ellipse 70% 60% at 15% 10%,rgba(27,94,59,0.06) 0%,transparent 60%),radial-gradient(ellipse 50% 70% at 85% 85%,rgba(184,146,42,0.06) 0%,transparent 60%),var(--bg);}
-.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:var(--em-bg);border:0.5px solid var(--em-bd);border-radius:100px;padding:.3rem .85rem;font-size:12px;color:var(--em);margin-bottom:1.25rem;}
-.sheikh-card{background:#fff;border:0.5px solid var(--bd);border-radius:22px;overflow:hidden;box-shadow:0 6px 32px rgba(0,0,0,0.09);}
-.sheikh-photo-wrap{position:relative;overflow:hidden;background:linear-gradient(135deg,#1B3A2D,#2D5A40);height:280px;}
-.sheikh-img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block;}
+.logo-icon{width:42px;height:42px;background:linear-gradient(135deg,#FFD700,#B8922A);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.logo h1{font-family:'Amiri',serif;font-size:20px;color:#FFD700;}
+.logo p{font-size:16px;color:rgba(255,255,255,0.6);}
+.nav-links a{font-size:17px;color:rgba(255,255,255,0.8);margin-right:1.75rem;transition:color .2s;}
+.nav-links a:hover{color:#FFD700;}
+.btn-nav-ghost{background:transparent;border:1px solid rgba(255,255,255,0.3);color:#fff;padding:.5rem 1.25rem;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:17px;cursor:pointer;transition:all .2s;}
+.btn-nav-ghost:hover{border-color:#FFD700;color:#FFD700;}
+.btn-nav-gold{background:linear-gradient(135deg,#FFD700,#B8922A);border:none;color:#0F3220;padding:.5rem 1.25rem;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:17px;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-nav-gold:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(255,215,0,0.35);}
+
+/* ═══ HERO ═══ */
+.hero{position:relative;display:grid;grid-template-columns:1.2fr 0.8fr;gap:3rem;align-items:center;padding:5rem 2.5rem 4rem;overflow:hidden;min-height:90vh;
+  background:linear-gradient(135deg,#0A2A18 0%,#0F3220 40%,#1B5E3B 70%,#0D2B1C 100%);}
+.hero-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;}
+.hero-content{position:relative;z-index:2;}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);border-radius:100px;padding:.35rem .9rem;font-size:16px;color:#FFD700;margin-bottom:1.5rem;animation:fadeSlideDown .6s ease both;}
+.dot{width:8px;height:8px;background:#FFD700;border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.7);}}
+.hero h2{font-family:'Amiri',serif;font-size:60px;line-height:1.2;color:#fff;margin-bottom:1rem;animation:fadeSlideDown .7s ease .1s both;}
+.hero h2 span{color:#FFD700;}
+.hero p{font-size:17px;color:rgba(255,255,255,0.82);line-height:1.95;margin-bottom:2rem;max-width:560px;animation:fadeSlideDown .8s ease .2s both;}
+.hero-btns{display:flex;gap:.85rem;flex-wrap:wrap;animation:fadeSlideDown .8s ease .3s both;}
+.btn-hero-primary{background:linear-gradient(135deg,#FFD700,#B8922A);border:none;color:#0F3220;padding:.9rem 2.2rem;border-radius:12px;font-family:'Tajawal',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:.5rem;}
+.btn-hero-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,215,0,0.4);}
+.btn-hero-ghost{background:transparent;border:1.5px solid rgba(255,255,255,0.35);color:#fff;padding:.9rem 2.2rem;border-radius:12px;font-family:'Tajawal',sans-serif;font-size:16px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;}
+.btn-hero-ghost:hover{border-color:#FFD700;color:#FFD700;background:rgba(255,215,0,0.06);}
+.stats-row{display:flex;gap:2.5rem;margin-top:3rem;padding-top:2.5rem;border-top:1px solid rgba(255,255,255,0.12);animation:fadeSlideDown .9s ease .4s both;}
+.stat h3{font-size:34px;font-weight:700;color:#FFD700;}
+.stat p{font-size:17px;color:rgba(255,255,255,0.6);}
+
+/* ═══ SHEIKH CARD ═══ */
+.sheikh-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,215,0,0.25);border-radius:22px;overflow:hidden;backdrop-filter:blur(10px);position:relative;z-index:2;animation:fadeSlideLeft .8s ease .3s both;transition:transform .3s,box-shadow .3s;}
+.sheikh-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(0,0,0,0.4);}
+.sheikh-photo-wrap{position:relative;overflow:hidden;background:linear-gradient(135deg,#0A2A18,#1B5E3B);height:320px;}
+.sheikh-img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;background:#0D2B1C;}
 .sheikh-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;}
 .sheikh-placeholder-ic{font-size:64px;}
-.sheikh-placeholder-txt{font-size:15px;color:rgba(255,255,255,0.5);}
-.sheikh-overlay{position:absolute;bottom:0;left:0;right:0;padding:1.25rem;background:linear-gradient(0deg,rgba(0,0,0,0.55),transparent);}
-.sheikh-arabic{font-family:'Amiri',serif;font-size:20px;color:rgba(255,255,255,0.85);text-align:center;}
+.sheikh-placeholder-txt{font-size:17px;color:rgba(255,255,255,0.4);}
+.sheikh-overlay{position:absolute;bottom:0;left:0;right:0;padding:1.25rem;background:linear-gradient(0deg,rgba(0,0,0,0.7),transparent);}
+.sheikh-arabic{font-family:'Amiri',serif;font-size:20px;color:rgba(255,215,0,0.85);text-align:center;}
 .sheikh-info{padding:1.25rem 1.5rem;}
-.sheikh-name-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;}
-.sheikh-name{font-size:20px;font-weight:700;color:var(--tx);}
-.sheikh-title{font-size:15px;color:var(--em);margin-top:.2rem;}
-.sheikh-bio{font-size:15px;color:var(--tx2);line-height:1.75;margin-top:.65rem;border-top:0.5px solid var(--bd);padding-top:.65rem;}
-.dot{width:7px;height:7px;background:var(--em-l);border-radius:50%;animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.85);}}
-.hero h2{font-family:'Amiri',serif;font-size:58px;line-height:1.2;color:var(--tx);margin-bottom:.85rem;}
-.hero h2 span{color:var(--em);}
-.hero p{font-size:19px;color:var(--tx2);line-height:1.9;margin-bottom:1.75rem;max-width:520px;}
-.hero-btns{display:flex;gap:.75rem;flex-wrap:wrap;}
-.stats-row{display:flex;gap:2rem;margin-top:2.5rem;padding-top:2rem;border-top:0.5px solid var(--bd);}
-.stat h3{font-size:32px;font-weight:700;color:var(--em);}
-.stat p{font-size:16px;color:var(--tx3);}
-.video-card{background:#fff;border:0.5px solid var(--bd);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.07);}
-.video-thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#1B3A2D,#2D5A40);display:flex;align-items:center;justify-content:center;position:relative;}
-.arabic-label{position:absolute;top:14px;right:14px;font-family:'Amiri',serif;font-size:18px;color:rgba(255,255,255,0.2);}
-.play-btn{width:56px;height:56px;background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
-.play-tri{width:0;height:0;border:10px solid transparent;border-left:18px solid #fff;margin-right:-4px;}
-.video-info{padding:.9rem 1.1rem;display:flex;justify-content:space-between;align-items:center;}
-.live-pill{background:var(--red-bg);border:0.5px solid var(--red-bd);color:var(--red);font-size:11px;padding:.2rem .5rem;border-radius:6px;display:flex;align-items:center;gap:.3rem;}
-.rdot{width:6px;height:6px;background:var(--red);border-radius:50%;animation:pulse 1.5s infinite;}
-.section{padding:4rem 2.5rem;}
-.section.alt{background:#fff;}
-.sec-hdr{text-align:center;margin-bottom:2.5rem;}
-.sec-tag{display:inline-block;background:var(--em-bg);border:0.5px solid var(--em-bd);color:var(--em);font-size:11px;padding:.25rem .8rem;border-radius:100px;margin-bottom:.7rem;}
-.sec-hdr h2{font-family:'Amiri',serif;font-size:42px;color:var(--tx);margin-bottom:.6rem;}
-.sec-hdr h2 span{color:var(--em);}
-.sec-hdr p{color:var(--tx2);font-size:18px;max-width:520px;margin:0 auto;line-height:1.85;}
-.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
-.feat{background:#fff;border:0.5px solid var(--bd);border-radius:14px;padding:1.35rem;transition:all .2s;}
-.feat:hover{border-color:var(--em-bd);transform:translateY(-2px);}
-.feat-ic{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:.9rem;}
-.fi-em{background:var(--em-bg);border:0.5px solid var(--em-bd);}
-.fi-go{background:var(--gold-bg);border:0.5px solid var(--gold-bd);}
-.fi-bl{background:#eff6ff;border:0.5px solid #bfdbfe;}
-.feat h3{font-size:18px;font-weight:600;margin-bottom:.5rem;}
-.feat p{font-size:16px;color:var(--tx2);line-height:1.8;}
-.courses-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
-.c-card{background:#fff;border:0.5px solid var(--bd);border-radius:14px;overflow:hidden;transition:all .2s;cursor:pointer;}
-.c-card:hover{transform:translateY(-3px);border-color:var(--em-bd);box-shadow:0 6px 20px rgba(27,94,59,0.1);}
-.c-thumb{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:32px;position:relative;}
+.sheikh-name{font-size:20px;font-weight:700;color:#fff;}
+.sheikh-title{font-size:17px;color:#FFD700;margin-top:.2rem;}
+.sheikh-bio{font-size:17px;color:rgba(255,255,255,0.65);line-height:1.75;margin-top:.65rem;border-top:1px solid rgba(255,255,255,0.1);padding-top:.65rem;}
+.sheikh-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,215,0,0.15);border:0.5px solid rgba(255,215,0,0.35);color:#FFD700;font-size:17px;padding:.2rem .65rem;border-radius:100px;margin-top:.5rem;}
+
+/* ═══ FLOATING PARTICLES ═══ */
+.particle{position:absolute;border-radius:50%;pointer-events:none;opacity:0;animation:float linear infinite;}
+@keyframes float{0%{transform:translateY(100vh) rotate(0deg);opacity:0;}10%{opacity:.6;}90%{opacity:.3;}100%{transform:translateY(-100px) rotate(720deg);opacity:0;}}
+
+/* ═══ ANIMATIONS ═══ */
+@keyframes fadeSlideDown{from{opacity:0;transform:translateY(-20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeSlideLeft{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+/* ═══ AYAH BAR ═══ */
+.ayah{text-align:center;padding:1.75rem;font-family:'Amiri',serif;font-size:24px;
+  background:linear-gradient(135deg,#0F3220,#1B5E3B);color:#FFD700;letter-spacing:2px;
+  border:none;position:relative;overflow:hidden;}
+.ayah::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='rgba(255,215,0,0.08)' stroke-width='1'/%3E%3C/svg%3E") center/cover;pointer-events:none;}
+
+/* ═══ SECTIONS ═══ */
+.section{padding:5rem 2.5rem;}
+.section.dark{background:linear-gradient(135deg,#0A2A18,#0F3220);}
+.section.mid{background:linear-gradient(135deg,#0D2B1C,#1B3A2D);}
+.section.light-green{background:#f0faf4;}
+.sec-hdr{text-align:center;margin-bottom:3rem;}
+.sec-tag{display:inline-block;background:rgba(27,94,59,0.15);border:1px solid rgba(27,94,59,0.4);color:#1B5E3B;font-size:17px;padding:.3rem .9rem;border-radius:100px;margin-bottom:.75rem;}
+.sec-tag-light{display:inline-block;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.35);color:#FFD700;font-size:17px;padding:.3rem .9rem;border-radius:100px;margin-bottom:.75rem;}
+.sec-hdr h2{font-family:'Amiri',serif;font-size:44px;margin-bottom:.65rem;}
+.sec-hdr h2.dark-text{color:#fff;}
+.sec-hdr h2.light-text{color:#0F3220;}
+.sec-hdr h2 span{color:#FFD700;}
+.sec-hdr h2 span.green{color:#1B5E3B;}
+.sec-hdr p.dark-p{font-size:17px;color:rgba(255,255,255,0.7);max-width:520px;margin:0 auto;line-height:1.85;}
+.sec-hdr p.light-p{font-size:17px;color:#4a6650;max-width:520px;margin:0 auto;line-height:1.85;}
+
+/* ═══ FEATURES ═══ */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;}
+.feat{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:1.75rem;transition:all .3s;cursor:default;}
+.feat:hover{background:rgba(255,215,0,0.07);border-color:rgba(255,215,0,0.35);transform:translateY(-4px);}
+.feat-ic{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:1rem;}
+.fi-gold{background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);}
+.fi-green{background:rgba(27,94,59,0.3);border:1px solid rgba(27,94,59,0.5);}
+.fi-white{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);}
+.feat h3{font-size:18px;font-weight:600;margin-bottom:.5rem;color:#fff;}
+.feat p{font-size:17px;color:rgba(255,255,255,0.65);line-height:1.8;}
+
+/* ═══ COURSES ═══ */
+.courses-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;}
+.c-card{background:#fff;border:0.5px solid #E8E4D8;border-radius:16px;overflow:hidden;transition:all .3s;cursor:pointer;text-decoration:none;color:inherit;display:block;}
+.c-card:hover{transform:translateY(-5px);border-color:#A8D5BC;box-shadow:0 12px 36px rgba(27,94,59,0.15);}
+.c-thumb{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;}
 .ct1{background:linear-gradient(135deg,#1B3A2D,#0D2B1C);}
 .ct2{background:linear-gradient(135deg,#3A2B18,#261C0D);}
 .ct3{background:linear-gradient(135deg,#1A2B3E,#0D1B2A);}
 .ct4{background:linear-gradient(135deg,#2D1B3A,#1A0D2B);}
 .ct5{background:linear-gradient(135deg,#1A3A1B,#0D2B0E);}
 .ct6{background:linear-gradient(135deg,#3A1B1B,#2B0D0D);}
-.c-body{padding:.9rem 1.1rem;}
-.c-body h3{font-size:18px;font-weight:600;margin-bottom:.35rem;}
-.c-body .meta{font-size:15px;color:var(--tx3);margin-bottom:.65rem;}
+.c-body{padding:1rem 1.25rem;}
+.c-body h3{font-size:17px;font-weight:600;margin-bottom:.35rem;color:#1A1A14;}
+.c-body .meta{font-size:17px;color:#9B9278;margin-bottom:.7rem;}
 .c-foot{display:flex;justify-content:space-between;align-items:center;}
-.price{font-size:18px;font-weight:700;color:var(--em);}
-.stars{font-size:11px;color:var(--gold-l);}
+.price-tag{font-size:17px;font-weight:700;color:#1B5E3B;}
+.stars{font-size:16px;color:#B8922A;letter-spacing:1px;}
+
+/* ═══ LIVE SESSIONS ═══ */
 .live-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
-.ls-card{background:#fff;border:0.5px solid var(--bd);border-radius:12px;padding:1rem 1.15rem;display:flex;justify-content:space-between;align-items:center;}
-.ls-left .day{font-size:16px;color:var(--em);font-weight:600;}
-.ls-left .name{font-size:17px;color:var(--tx);font-weight:500;}
-.ls-left .time{font-size:14px;color:var(--tx3);}
-.ann-list{display:flex;flex-direction:column;gap:.75rem;}
-.ann-item{background:#fff;border:0.5px solid var(--bd);border-radius:10px;padding:.9rem 1.1rem;}
-.ann-item h4{font-size:18px;font-weight:600;margin-bottom:.35rem;}
-.ann-item p{font-size:17px;color:var(--tx2);line-height:1.8;}
-.ann-item .dt{font-size:11px;color:var(--tx3);margin-top:.4rem;}
-.ayah{text-align:center;padding:1.5rem;font-family:'Amiri',serif;font-size:24px;color:var(--em);opacity:.5;background:var(--em-bg);border-top:0.5px solid var(--em-bd);border-bottom:0.5px solid var(--em-bd);}
-footer{background:#fff;border-top:0.5px solid var(--bd);padding:2.5rem;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem;}
-.foot-brand h2{font-family:'Amiri',serif;font-size:22px;color:var(--em);margin-bottom:.4rem;}
-.foot-brand p{font-size:14px;color:var(--tx2);line-height:1.75;max-width:240px;}
-footer h4{font-size:14px;font-weight:500;color:var(--tx);margin-bottom:.85rem;letter-spacing:.5px;}
-footer a{display:block;font-size:15px;color:var(--tx2);margin-bottom:.5rem;transition:color .2s;}
-footer a:hover{color:var(--em);}
-.foot-bottom{background:#fff;border-top:0.5px solid var(--bd);padding:1rem 2.5rem;text-align:center;font-size:11px;color:var(--tx3);}
+.ls-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:1.1rem 1.3rem;display:flex;justify-content:space-between;align-items:center;transition:all .25s;}
+.ls-card:hover{background:rgba(255,215,0,0.07);border-color:rgba(255,215,0,0.3);}
+.ls-left .day{font-size:17px;color:#FFD700;font-weight:600;}
+.ls-left .name{font-size:16px;color:#fff;font-weight:500;margin:.15rem 0;}
+.ls-left .time{font-size:16px;color:rgba(255,255,255,0.55);}
+.btn-join{background:linear-gradient(135deg,#FFD700,#B8922A);border:none;color:#0F3220;padding:.45rem 1.1rem;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-join:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(255,215,0,0.3);}
+.btn-join-ghost{background:transparent;border:1px solid rgba(255,255,255,0.25);color:#fff;padding:.45rem 1.1rem;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:16px;cursor:pointer;transition:all .2s;}
+.btn-join-ghost:hover{border-color:#FFD700;color:#FFD700;}
+
+/* ═══ ANNOUNCEMENTS ═══ */
+.ann-item{background:#fff;border:0.5px solid #E8E4D8;border-radius:14px;padding:1.25rem 1.5rem;transition:all .25s;}
+.ann-item:hover{border-color:#A8D5BC;box-shadow:0 4px 16px rgba(27,94,59,0.08);}
+.ann-item h4{font-size:18px;font-weight:600;margin-bottom:.4rem;color:#0F3220;}
+.ann-item p{font-size:16px;color:#6B6650;line-height:1.8;}
+.ann-item .dt{font-size:17px;color:#9B9278;margin-top:.5rem;}
+
+/* ═══ FOOTER ═══ */
+footer{background:linear-gradient(135deg,#071A0F,#0A2A18);padding:3rem 2.5rem 1.5rem;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem;}
+.foot-brand h2{font-family:'Amiri',serif;font-size:22px;color:#FFD700;margin-bottom:.5rem;}
+.foot-brand p{font-size:17px;color:rgba(255,255,255,0.55);line-height:1.8;max-width:240px;}
+footer h4{font-size:16px;font-weight:500;color:rgba(255,255,255,0.5);margin-bottom:.9rem;letter-spacing:.5px;text-transform:uppercase;}
+footer a{display:block;font-size:17px;color:rgba(255,255,255,0.65);margin-bottom:.55rem;transition:color .2s;}
+footer a:hover{color:#FFD700;}
+.foot-bottom{background:#071A0F;border-top:1px solid rgba(255,255,255,0.08);padding:1.1rem 2.5rem;text-align:center;font-size:17px;color:rgba(255,255,255,0.35);}
+
+/* ═══ BADGE ═══ */
+.badge-free{background:rgba(27,94,59,0.85);color:#A7F3D0;font-size:16px;padding:.2rem .6rem;border-radius:6px;font-weight:500;}
+.badge-paid{background:rgba(184,146,42,0.85);color:#FDE68A;font-size:16px;padding:.2rem .6rem;border-radius:6px;font-weight:500;}
+
+/* ═══ SCROLL INDICATOR ═══ */
+.scroll-down{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.4rem;color:rgba(255,255,255,0.4);font-size:17px;animation:bounce 2s infinite;z-index:2;}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(8px);}}
+.scroll-arrow{width:24px;height:24px;border-right:2px solid rgba(255,215,0,0.5);border-bottom:2px solid rgba(255,215,0,0.5);transform:rotate(45deg);}
 </style>
 {% endblock %}
+
 {% block body %}
+
+<!-- NAV -->
 <nav>
   <div class="logo">
     <div class="logo-icon">📖</div>
@@ -107,24 +166,27 @@ footer a:hover{color:var(--em);}
     <a href="#live">الجلسات المباشرة</a>
     <a href="#announcements">الإعلانات</a>
   </div>
-  <div class="nav-cta">
+  <div style="display:flex;gap:.6rem;">
     {% if current_user.is_authenticated %}
-      <a href="{{ url_for('dashboard') }}" class="btn btn-primary">لوحة التحكم</a>
+      <a href="{{ url_for('dashboard') }}" class="btn-nav-gold">لوحة التحكم</a>
     {% else %}
-      <a href="{{ url_for('login') }}" class="btn btn-ghost">تسجيل الدخول</a>
-      <a href="{{ url_for('register') }}" class="btn btn-primary">إنشاء حساب</a>
+      <a href="{{ url_for('login') }}" class="btn-nav-ghost">تسجيل الدخول</a>
+      <a href="{{ url_for('register') }}" class="btn-nav-gold">إنشاء حساب</a>
     {% endif %}
   </div>
 </nav>
 
+<!-- HERO -->
 <div class="hero">
-  <div>
-    <div class="hero-badge"><span class="dot"></span> القرآن الكريم برواية حفص</div>
+  <canvas class="hero-canvas" id="heroCanvas"></canvas>
+
+  <div class="hero-content">
+    <div class="hero-badge"><span class="dot"></span> القرآن الكريم بالقراءات العشر إفراداً وجمعاً</div>
     <h2>تعلم القرآن<br>مع <span>أفضل المقرئين</span></h2>
-    <p>منصة متكاملة للتعلم والحفظ والتجويد، مع شيخ متخصص ومتابعة فردية لكل طالب في أي مكان وأي وقت.</p>
+    <p>{{ "منصة متكاملة للتعلم والحفظ والإجازة بالقراءات العشر افرادا وجمعا، مع نور القران نسعى لتقريب القران الكريم الى قلبك من خلال تجربة تعريمية مبتكرة ومميزة ، مع مجموعة من أكفئ المعلمين حاصلين على اجازات و أسانيد عالية." }}</p>
     <div class="hero-btns">
-      <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">ابدأ رحلتك الآن</a>
-      <a href="{{ url_for('courses_list') }}" class="btn btn-ghost btn-lg">تصفح الدروس</a>
+      <a href="{{ url_for('register') }}" class="btn-hero-primary">✨ ابدأ رحلتك الآن</a>
+      <a href="{{ url_for('courses_list') }}" class="btn-hero-ghost">تصفح الدروس</a>
     </div>
     <div class="stats-row">
       <div class="stat"><h3>+{{ stats.students }}</h3><p>طالب منتسب</p></div>
@@ -132,7 +194,8 @@ footer a:hover{color:var(--em);}
       <div class="stat"><h3>{{ stats.courses }}</h3><p>كورس متاح</p></div>
     </div>
   </div>
-  <div>
+
+  <div style="position:relative;z-index:2;">
     <div class="sheikh-card">
       <div class="sheikh-photo-wrap">
         {% if sheikh and sheikh.hero_photo %}
@@ -148,54 +211,55 @@ footer a:hover{color:var(--em);}
         </div>
       </div>
       <div class="sheikh-info">
-        <div class="sheikh-name-row">
-          <div>
-            <div class="sheikh-name">{% if sheikh %}{{ sheikh.name }}{% else %}الشيخ المقرئ{% endif %}</div>
-            <div class="sheikh-title">مقرئ ومعلم القرآن الكريم</div>
-          </div>
-          <span class="badge badge-em">متاح للتسجيل</span>
-        </div>
+        <div class="sheikh-name">{% if sheikh %}{{ sheikh.name }}{% else %}الشيخ المقرئ{% endif %}</div>
+        <div class="sheikh-title">مقرئ ومعلم القرآن الكريم</div>
         {% if sheikh and sheikh.bio %}
         <div class="sheikh-bio">{{ sheikh.bio }}</div>
         {% endif %}
+        <div class="sheikh-badge">🟢 متاح للتسجيل الآن</div>
       </div>
     </div>
   </div>
+
+  <div class="scroll-down"><span>تمرير للأسفل</span><div class="scroll-arrow"></div></div>
 </div>
 
+<!-- AYAH -->
 <div class="ayah">﴿ وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا ﴾</div>
 
-<div class="section alt">
+<!-- FEATURES -->
+<div class="section dark reveal">
   <div class="sec-hdr">
-    <div class="sec-tag">ما نقدمه</div>
-    <h2>خدمات <span>المنصة</span></h2>
-    <p>كل ما تحتاجه لرحلة تعلم القرآن الكريم في مكان واحد</p>
+    <div class="sec-tag-light">ما نقدمه</div>
+    <h2 class="dark-text">خدمات <span>المنصة</span></h2>
+    <p class="dark-p">كل ما تحتاجه لرحلة تعلم القرآن الكريم في مكان واحد</p>
   </div>
   <div class="feat-grid">
-    <div class="feat"><div class="feat-ic fi-em">🎥</div><h3>دروس مسجلة</h3><p>مكتبة من الدروس المصورة في التجويد والحفظ والتفسير، متاحة في أي وقت</p></div>
-    <div class="feat"><div class="feat-ic fi-go">📡</div><h3>حلقات مباشرة</h3><p>جلسات أسبوعية مباشرة مع الشيخ للتسميع والتصحيح وطرح الأسئلة</p></div>
-    <div class="feat"><div class="feat-ic fi-bl">📞</div><h3>متابعة فردية</h3><p>متابعة شخصية مع الشيخ لتقييم مستواك وتحديد خطة التعلم المناسبة</p></div>
-    <div class="feat"><div class="feat-ic fi-go">📊</div><h3>تتبع التقدم</h3><p>لوحة تحكم شخصية تعرض مستواك ونسبة حفظك وتقاريرك الأسبوعية</p></div>
-    <div class="feat"><div class="feat-ic fi-em">🏆</div><h3>شهادات معتمدة</h3><p>احصل على إجازة معتمدة بعد إكمال المنهج مع سند متصل بالنبي ﷺ</p></div>
-    <div class="feat"><div class="feat-ic fi-bl">💬</div><h3>مجتمع الطلاب</h3><p>تواصل مع زملائك وتبادل الخبرات والدعم المتبادل في رحلة الحفظ</p></div>
+    <div class="feat reveal"><div class="feat-ic fi-gold">🎥</div><h3>دروس مسجلة</h3><p>مكتبة من الدروس المصورة في التجويد والحفظ والتفسير، متاحة في أي وقت</p></div>
+    <div class="feat reveal"><div class="feat-ic fi-green">📡</div><h3>حلقات مباشرة</h3><p>جلسات أسبوعية مباشرة مع الشيخ للتسميع والتصحيح وطرح الأسئلة</p></div>
+    <div class="feat reveal"><div class="feat-ic fi-white">📞</div><h3>متابعة فردية وجماعية</h3><p>حلقات فريدة مع المعلم الخاص بك وحلقات جماعية لتشجيعك</p></div>
+    <div class="feat reveal"><div class="feat-ic fi-gold">📊</div><h3>النحو والصرف والبلاغة</h3><p>نسعى لتقريب وتسهيل علم النحو والصرف والبلاغة من خلال دورات التحليل النحوي</p></div>
+    <div class="feat reveal"><div class="feat-ic fi-green">🏆</div><h3>حلقات للأطفال</h3><p>حلقات مباشرة للأطفال لتعليم القرآن الكريم واللغة العربية</p></div>
+    <div class="feat reveal"><div class="feat-ic fi-white">💬</div><h3>أكفأ المعلمين</h3><p>مجموعة من أكفأ المعلمين حاصلين على إجازات وأسانيد عالية</p></div>
   </div>
 </div>
 
-<div class="section">
+<!-- COURSES -->
+<div class="section light-green reveal">
   <div class="sec-hdr">
     <div class="sec-tag">الكورسات</div>
-    <h2>الدروس <span>المتاحة</span></h2>
-    <p>برامج متنوعة لجميع المستويات من المبتدئ حتى الإجازة</p>
+    <h2 class="light-text">الدروس <span class="green">المتاحة</span></h2>
+    <p class="light-p">برامج متنوعة لجميع المستويات من المبتدئ حتى الإجازة</p>
   </div>
   {% set thumbs = ['ct1','ct2','ct3','ct4','ct5','ct6'] %}
   {% set icons = ['🌙','📜','✨','🕌','📖','🌟'] %}
   <div class="courses-grid">
     {% for course in courses %}
-    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="c-card">
+    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="c-card reveal">
       <div class="c-thumb {{ thumbs[loop.index0 % 6] }}">
         <span>{{ icons[loop.index0 % 6] }}</span>
-        <span style="position:absolute;top:10px;right:10px;" class="badge {% if course.is_free or course.price==0 %}badge-em{% else %}badge-gold{% endif %}">
-          {% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ر.س{% endif %}
+        <span style="position:absolute;top:10px;right:10px;" class="{% if course.is_free or course.price==0 %}badge-free{% else %}badge-paid{% endif %}">
+          {% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} {% if current_user.is_authenticated %}{{ get_currency(current_user.country) }}{% else %}ر.س{% endif %}{% endif %}
         </span>
       </div>
       <div class="c-body">
@@ -203,73 +267,197 @@ footer a:hover{color:var(--em);}
         <div class="meta">{{ course.level }} · {{ course.category }}</div>
         <div class="c-foot">
           <span class="stars">★★★★★</span>
-          <span class="price">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ر.س{% endif %}</span>
+          <span class="price-tag">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} {% if current_user.is_authenticated %}{{ get_currency(current_user.country) }}{% else %}ر.س{% endif %}{% endif %}</span>
         </div>
       </div>
     </a>
     {% else %}
-    <p style="color:var(--tx3);grid-column:1/-1;text-align:center;padding:2rem;">لا توجد كورسات بعد</p>
+    <p style="color:#6B6650;grid-column:1/-1;text-align:center;padding:2rem;">لا توجد كورسات بعد</p>
     {% endfor %}
   </div>
-  <div style="text-align:center;margin-top:2rem;">
-    <a href="{{ url_for('courses_list') }}" class="btn btn-ghost btn-lg">عرض جميع الكورسات</a>
+  <div style="text-align:center;margin-top:2.5rem;">
+    <a href="{{ url_for('courses_list') }}" style="background:linear-gradient(135deg,#1B5E3B,#2D8A5E);color:#fff;padding:.9rem 2.5rem;border-radius:12px;font-size:16px;font-family:'Tajawal',sans-serif;font-weight:600;transition:all .25s;display:inline-block;">عرض جميع الكورسات ←</a>
   </div>
 </div>
 
-<div class="section alt" id="live">
+<!-- LIVE -->
+<div class="section mid reveal" id="live">
   <div class="sec-hdr">
-    <div class="sec-tag">المباشر</div>
-    <h2>الجلسات <span>المباشرة</span></h2>
-    <p>حلقات أسبوعية منتظمة — سجّل مقعدك وانضم من أي مكان</p>
+    <div class="sec-tag-light">مباشر</div>
+    <h2 class="dark-text">الجلسات <span>المباشرة</span></h2>
+    <p class="dark-p">حلقات أسبوعية منتظمة — سجّل مقعدك وانضم من أي مكان</p>
   </div>
   <div class="live-grid">
     {% for ls in live_sessions %}
-    <div class="ls-card">
+    <div class="ls-card reveal">
       <div class="ls-left">
         <div class="day">{{ ls.scheduled_at.strftime('%A') }}</div>
         <div class="name">{{ ls.title }}</div>
-        <div class="time">{{ ls.scheduled_at.strftime('%H:%M') }} · {{ ls.duration_minutes }} دقيقة</div>
+        <div class="time">🕐 {{ ls.scheduled_at.strftime('%H:%M') }} · {{ ls.duration_minutes }} دقيقة</div>
       </div>
       {% if current_user.is_authenticated and ls.meeting_link %}
-        <a href="{{ ls.meeting_link }}" target="_blank" class="btn btn-primary btn-sm">انضم</a>
+        <a href="{{ ls.meeting_link }}" target="_blank" class="btn-join">انضم الآن</a>
       {% else %}
-        <a href="{{ url_for('register') }}" class="btn btn-ghost btn-sm">سجّل</a>
+        <a href="{{ url_for('register') }}" class="btn-join-ghost">سجّل</a>
       {% endif %}
     </div>
     {% else %}
-    <p style="color:var(--tx3);grid-column:1/-1;text-align:center;padding:2rem;">لا توجد جلسات مجدولة حالياً</p>
+    <p style="color:rgba(255,255,255,0.4);grid-column:1/-1;text-align:center;padding:2rem;">لا توجد جلسات مجدولة حالياً</p>
     {% endfor %}
   </div>
 </div>
 
+<!-- ANNOUNCEMENTS -->
 {% if announcements %}
-<div class="section" id="announcements">
+<div class="section light-green reveal" id="announcements">
   <div class="sec-hdr">
     <div class="sec-tag">إعلانات</div>
-    <h2>آخر <span>الأخبار</span></h2>
+    <h2 class="light-text">آخر <span class="green">الأخبار</span></h2>
   </div>
-  <div class="ann-list" style="max-width:700px;margin:0 auto;">
+  <div style="display:flex;flex-direction:column;gap:.85rem;max-width:720px;margin:0 auto;">
     {% for ann in announcements %}
-    <div class="ann-item">
+    <div class="ann-item reveal">
       <h4>{{ ann.title }}</h4>
       <p>{{ ann.content }}</p>
-      <div class="dt">{{ ann.created_at.strftime('%Y-%m-%d') }}</div>
+      <div class="dt">📅 {{ ann.created_at.strftime('%Y-%m-%d') }}</div>
     </div>
     {% endfor %}
   </div>
 </div>
 {% endif %}
 
+<!-- AYAH 2 -->
 <div class="ayah">﴿ إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ ﴾</div>
 
+<!-- FOOTER -->
 <footer>
   <div class="foot-brand">
     <h2>نور القرآن</h2>
-    <p>منصة متكاملة لتعليم القرآن الكريم تجمع بين الأصالة والتقنية</p>
+    <p>منصة متكاملة لتعليم القرآن الكريم تجمع بين الأصالة والتقنية الحديثة</p>
   </div>
-  <div><h4>المنصة</h4><a href="{{ url_for('courses_list') }}">الكورسات</a><a href="#live">الجلسات المباشرة</a><a href="{{ url_for('register') }}">إنشاء حساب</a></div>
-  <div><h4>الدعم</h4><a href="#">الأسئلة الشائعة</a><a href="{{ url_for('contact') }}">تواصل معنا</a></div>
-  <div><h4>تابعنا</h4><a href="#">يوتيوب</a><a href="#">تيليجرام</a><a href="#">واتساب</a></div>
+  <div><h4>المنصة</h4>
+    <a href="{{ url_for('courses_list') }}">الكورسات</a>
+    <a href="#live">الجلسات المباشرة</a>
+    <a href="{{ url_for('register') }}">إنشاء حساب</a>
+  </div>
+  <div><h4>الدعم</h4>
+    <a href="#">الأسئلة الشائعة</a>
+    <a href="{{ url_for('contact') }}">تواصل معنا</a>
+  </div>
+  <div><h4>تابعنا</h4>
+    <a href="#">يوتيوب</a>
+    <a href="#">تيليجرام</a>
+    <a href="#">واتساب</a>
+  </div>
 </footer>
 <div class="foot-bottom">جميع الحقوق محفوظة © ١٤٤٦ هـ · منصة نور القرآن</div>
+
+<script>
+// ═══ CANVAS PARTICLES ═══
+const canvas = document.getElementById('heroCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resize() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+function createParticle() {
+  return {
+    x: Math.random() * canvas.width,
+    y: canvas.height + 10,
+    size: Math.random() * 3 + 1,
+    speedY: Math.random() * 1.2 + 0.4,
+    speedX: (Math.random() - 0.5) * 0.5,
+    opacity: Math.random() * 0.5 + 0.1,
+    color: Math.random() > 0.5 ? '#FFD700' : '#A8D5BC',
+    rotation: Math.random() * 360,
+    rotSpeed: (Math.random() - 0.5) * 2,
+  };
+}
+
+for (let i = 0; i < 40; i++) {
+  const p = createParticle();
+  p.y = Math.random() * canvas.height;
+  particles.push(p);
+}
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach((p, i) => {
+    p.y -= p.speedY;
+    p.x += p.speedX;
+    p.rotation += p.rotSpeed;
+    if (p.y < -10) particles[i] = createParticle();
+    ctx.save();
+    ctx.globalAlpha = p.opacity;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rotation * Math.PI / 180);
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ═══ MOUSE PARALLAX ON HERO ═══
+document.querySelector('.hero').addEventListener('mousemove', (e) => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width - 0.5;
+  const y = (e.clientY - rect.top) / rect.height - 0.5;
+  const card = document.querySelector('.sheikh-card');
+  if (card) card.style.transform = `translateY(-6px) rotateY(${x * 4}deg) rotateX(${-y * 3}deg)`;
+});
+document.querySelector('.hero').addEventListener('mouseleave', () => {
+  const card = document.querySelector('.sheikh-card');
+  if (card) card.style.transform = 'translateY(0) rotateY(0) rotateX(0)';
+});
+
+// ═══ SCROLL REVEAL ═══
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+revealEls.forEach(el => observer.observe(el));
+
+// ═══ COUNTER ANIMATION ═══
+function animateCounter(el, target) {
+  let current = 0;
+  const step = Math.ceil(target / 60);
+  const timer = setInterval(() => {
+    current += step;
+    if (current >= target) { current = target; clearInterval(timer); }
+    el.textContent = '+' + current;
+  }, 30);
+}
+const statObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.querySelectorAll('.stat h3').forEach(el => {
+        const val = parseInt(el.textContent.replace('+','')) || 0;
+        if (val > 0) animateCounter(el, val);
+      });
+      statObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.5 });
+const statsRow = document.querySelector('.stats-row');
+if (statsRow) statObserver.observe(statsRow.closest('.hero-content') || statsRow);
+
+// ═══ FEAT CARDS STAGGER ═══
+document.querySelectorAll('.feat').forEach((el, i) => {
+  el.style.transitionDelay = (i * 0.07) + 's';
+});
+</script>
 {% endblock %}

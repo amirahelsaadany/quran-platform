@@ -4,9 +4,9 @@
 <style>
 body{display:grid;grid-template-columns:1fr 320px;grid-template-rows:auto 1fr;min-height:100vh;background:#fff;}
 .top-bar{grid-column:1/-1;background:#fff;border-bottom:0.5px solid var(--bd);padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
-.top-bar .back{font-size:13px;color:var(--em);display:flex;align-items:center;gap:.35rem;}
-.top-bar h2{font-size:15px;font-weight:500;color:var(--tx);}
-.top-bar .prog{font-size:12px;color:var(--tx3);}
+.top-bar .back{font-size:16px;color:var(--em);display:flex;align-items:center;gap:.35rem;}
+.top-bar h2{font-size:17px;font-weight:500;color:var(--tx);}
+.top-bar .prog{font-size:17px;color:var(--tx3);}
 .video-area{background:#0D1117;display:flex;flex-direction:column;overflow-y:auto;}
 .video-wrap{position:relative;width:100%;background:#000;}
 .video-wrap iframe,.video-wrap video{width:100%;aspect-ratio:16/9;display:block;border:none;}
@@ -14,27 +14,27 @@ body{display:grid;grid-template-columns:1fr 320px;grid-template-rows:auto 1fr;mi
 .no-video .ic{font-size:48px;}
 .lesson-detail{padding:1.5rem;background:#fff;flex:1;}
 .lesson-detail h2{font-size:18px;font-weight:500;margin-bottom:.5rem;}
-.lesson-detail .meta{font-size:12px;color:var(--tx3);margin-bottom:1rem;}
-.lesson-detail p{font-size:14px;color:var(--tx2);line-height:1.8;}
+.lesson-detail .meta{font-size:17px;color:var(--tx3);margin-bottom:1rem;}
+.lesson-detail p{font-size:17px;color:var(--tx2);line-height:1.8;}
 .materials{margin-top:1.25rem;}
-.materials h3{font-size:14px;font-weight:500;margin-bottom:.65rem;}
-.mat-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;border:0.5px solid var(--bd);border-radius:8px;font-size:13px;color:var(--em);margin-bottom:.4rem;transition:background .2s;}
+.materials h3{font-size:17px;font-weight:500;margin-bottom:.65rem;}
+.mat-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;border:0.5px solid var(--bd);border-radius:8px;font-size:16px;color:var(--em);margin-bottom:.4rem;transition:background .2s;}
 .mat-item:hover{background:var(--em-bg);}
 .mark-btn{margin-top:1.25rem;padding-top:1.25rem;border-top:0.5px solid var(--bd);}
 .sidebar{background:var(--bg);border-right:0.5px solid var(--bd);overflow-y:auto;}
-.sidebar-hdr{padding:.9rem 1rem;border-bottom:0.5px solid var(--bd);font-size:13px;font-weight:500;color:var(--tx);background:#fff;position:sticky;top:0;}
-.prog-summary{padding:.5rem 1rem;background:#fff;border-bottom:0.5px solid var(--bd);font-size:12px;color:var(--tx3);}
+.sidebar-hdr{padding:.9rem 1rem;border-bottom:0.5px solid var(--bd);font-size:16px;font-weight:500;color:var(--tx);background:#fff;position:sticky;top:0;}
+.prog-summary{padding:.5rem 1rem;background:#fff;border-bottom:0.5px solid var(--bd);font-size:17px;color:var(--tx3);}
 .prog-mini{height:3px;background:var(--bd);border-radius:2px;margin-top:.3rem;}
 .prog-mini-fill{height:100%;background:linear-gradient(90deg,var(--em),var(--em-l));border-radius:2px;}
 .lesson-item{display:flex;align-items:center;gap:.7rem;padding:.7rem 1rem;border-bottom:0.5px solid var(--bd);cursor:pointer;transition:background .15s;text-decoration:none;color:inherit;}
 .lesson-item:hover{background:var(--em-bg);}
 .lesson-item.active{background:var(--em-bg);border-right:2px solid var(--em);}
-.lesson-num{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.lesson-num{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;}
 .ln-done{background:var(--em-bg);color:var(--em);border:0.5px solid var(--em-bd);}
 .ln-active{background:var(--em);color:#fff;}
 .ln-pending{background:var(--bg3);color:var(--tx3);border:0.5px solid var(--bd);}
-.lesson-item h4{font-size:13px;font-weight:400;color:var(--tx);line-height:1.35;}
-.lesson-item .dur{font-size:11px;color:var(--tx3);margin-top:.15rem;}
+.lesson-item h4{font-size:16px;font-weight:400;color:var(--tx);line-height:1.35;}
+.lesson-item .dur{font-size:16px;color:var(--tx3);margin-top:.15rem;}
 </style>
 {% endblock %}
 {% block body %}
@@ -55,7 +55,7 @@ body{display:grid;grid-template-columns:1fr 320px;grid-template-rows:auto 1fr;mi
     {% else %}
     <div class="no-video">
       <div class="ic">🎬</div>
-      <p style="font-size:14px;">لم يُرفع فيديو لهذا الدرس بعد</p>
+      <p style="font-size:17px;">لم يُرفع فيديو لهذا الدرس بعد</p>
     </div>
     {% endif %}
   </div>
@@ -80,7 +80,7 @@ body{display:grid;grid-template-columns:1fr 320px;grid-template-rows:auto 1fr;mi
     {% endif %}
     <div class="mark-btn" id="markArea">
       {% if current_lesson.id in progress_ids %}
-      <span class="badge badge-em" style="padding:.4rem .9rem;font-size:13px;">✓ درس مكتمل</span>
+      <span class="badge badge-em" style="padding:.4rem .9rem;font-size:16px;">✓ درس مكتمل</span>
       {% else %}
       <button class="btn btn-primary" id="markBtn" onclick="markComplete({{ current_lesson.id }})">
         ✓ تحديد كمكتمل
@@ -118,7 +118,7 @@ function markComplete(lessonId){
   fetch('/mark_complete/'+lessonId,{method:'POST',headers:{'Content-Type':'application/json'}})
     .then(r=>r.json()).then(d=>{
       if(d.success){
-        document.getElementById('markBtn').outerHTML='<span class="badge badge-em" style="padding:.4rem .9rem;font-size:13px;">✓ درس مكتمل</span>';
+        document.getElementById('markBtn').outerHTML='<span class="badge badge-em" style="padding:.4rem .9rem;font-size:16px;">✓ درس مكتمل</span>';
         setTimeout(()=>location.reload(),500);
       }
     });

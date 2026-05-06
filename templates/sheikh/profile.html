@@ -6,10 +6,10 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
 .sidebar{background:#fff;border-left:0.5px solid var(--bd);padding:1.5rem 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
 .sb-logo{padding:0 1.25rem 1.5rem;border-bottom:0.5px solid var(--bd);}
 .sb-logo .ic{width:38px;height:38px;background:linear-gradient(135deg,var(--em),var(--em-l));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;}
-.sb-logo h2{font-family:'Amiri',serif;font-size:16px;color:var(--gold);margin-top:.5rem;}
-.sb-link{display:flex;align-items:center;gap:.65rem;padding:.6rem 1.25rem;font-size:13px;color:var(--tx2);transition:all .15s;border-right:2px solid transparent;}
+.sb-logo h2{font-family:'Amiri',serif;font-size:20px;color:var(--gold);margin-top:.5rem;}
+.sb-link{display:flex;align-items:center;justify-content:flex-start;gap:.65rem;padding:.75rem 1.25rem;font-size:16px;color:var(--tx2);transition:all .15s;border-right:2px solid transparent;}
 .sb-link:hover,.sb-link.active{background:var(--em-bg);color:var(--em);border-right-color:var(--em);}
-.sb-section{padding:.75rem 1.25rem .25rem;font-size:10px;color:var(--tx3);letter-spacing:.5px;}
+.sb-section{padding:.75rem 1.25rem .25rem;font-size:16px;color:var(--tx3);letter-spacing:.5px;}
 .main{background:var(--bg);padding:2rem;overflow-y:auto;}
 .page-title{font-family:'Amiri',serif;font-size:26px;color:var(--tx);margin-bottom:1.5rem;}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
@@ -20,9 +20,9 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
 .photo-preview{width:100%;height:150px;object-fit:cover;border-radius:8px;display:block;margin-bottom:.5rem;}
 .ph{height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.35rem;}
 .ph .ic{font-size:26px;}
-.ph p{font-size:13px;color:var(--tx2);font-weight:500;}
-.ph small{font-size:11px;color:var(--tx3);}
-.photo-label{font-size:14px;font-weight:500;color:var(--tx);margin-bottom:.6rem;}
+.ph p{font-size:16px;color:var(--tx2);font-weight:500;}
+.ph small{font-size:16px;color:var(--tx3);}
+.photo-label{font-size:17px;font-weight:500;color:var(--tx);margin-bottom:.6rem;}
 </style>
 {% endblock %}
 {% block body %}
@@ -50,14 +50,14 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
   <form method="POST" enctype="multipart/form-data" style="max-width:680px;">
 
     <div class="card" style="margin-bottom:1.25rem;">
-      <div style="font-size:15px;font-weight:500;margin-bottom:1rem;">📸 الصور</div>
+      <div style="font-size:17px;font-weight:500;margin-bottom:1rem;">📸 الصور</div>
       <div class="photo-boxes">
         <div>
           <div class="photo-label">🖼 صورة الصفحة الرئيسية</div>
           <div class="photo-box {% if current_user.hero_photo %}has-img{% endif %}" id="heroBox" onclick="document.getElementById('heroInput').click()">
             {% if current_user.hero_photo %}
               <img id="heroPreview" src="{{ url_for('static', filename=current_user.hero_photo) }}" class="photo-preview">
-              <div style="font-size:12px;color:var(--em);">✓ اضغط لتغييرها</div>
+              <div style="font-size:17px;color:var(--em);">✓ اضغط لتغييرها</div>
             {% else %}
               <div class="ph" id="heroPH"><span class="ic">🖼</span><p>اضغط لرفع الصورة</p><small>تظهر في الصفحة الرئيسية</small></div>
               <img id="heroPreview" src="" class="photo-preview" style="display:none">
@@ -70,7 +70,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
           <div class="photo-box {% if current_user.avatar %}has-img{% endif %}" id="avatarBox" onclick="document.getElementById('avatarInput').click()">
             {% if current_user.avatar %}
               <img id="avatarPreview" src="{{ url_for('static', filename=current_user.avatar) }}" class="photo-preview">
-              <div style="font-size:12px;color:var(--em);">✓ اضغط لتغييرها</div>
+              <div style="font-size:17px;color:var(--em);">✓ اضغط لتغييرها</div>
             {% else %}
               <div class="ph" id="avatarPH"><span class="ic">👳</span><p>اضغط لرفع الصورة</p><small>صورتك الشخصية</small></div>
               <img id="avatarPreview" src="" class="photo-preview" style="display:none">
@@ -79,13 +79,13 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
           <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display:none" onchange="previewPhoto(this,'avatarPreview','avatarBox','avatarPH')">
         </div>
       </div>
-      <div id="photoHint" style="display:none;font-size:13px;color:var(--em);background:var(--em-bg);border:0.5px solid var(--em-bd);border-radius:8px;padding:.6rem .9rem;">
+      <div id="photoHint" style="display:none;font-size:16px;color:var(--em);background:var(--em-bg);border:0.5px solid var(--em-bd);border-radius:8px;padding:.6rem .9rem;">
         📌 اضغط <strong>حفظ التغييرات</strong> أدناه لرفع الصورة
       </div>
     </div>
 
     <div class="card" style="margin-bottom:1.25rem;">
-      <div style="font-size:15px;font-weight:500;margin-bottom:1rem;">📋 المعلومات الشخصية</div>
+      <div style="font-size:17px;font-weight:500;margin-bottom:1rem;">📋 المعلومات الشخصية</div>
       <div class="form-grid">
         <div class="form-group" style="grid-column:1/-1;">
           <label class="form-label">الاسم الكامل</label>
@@ -115,7 +115,42 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
     </div>
 
     <div class="card" style="margin-bottom:1.25rem;">
-      <div style="font-size:15px;font-weight:500;margin-bottom:1rem;">🔐 تغيير كلمة المرور</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:1.25rem;color:var(--em);">💳 معلومات الدفع والتحويل</div>
+      <div style="font-size:17px;color:var(--tx3);margin-bottom:1.25rem;">هذه المعلومات ستظهر للطلاب عند الاشتراك في الكورسات المدفوعة — تأكد من صحتها.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="form-group">
+          <label class="form-label">🏦 اسم البنك</label>
+          <input type="text" name="bank_name" class="form-input" value="{{ current_user.bank_name }}" placeholder="مثال: البنك الأهلي / بنك مصر">
+        </div>
+        <div class="form-group">
+          <label class="form-label">🔢 رقم الحساب البنكي / IBAN</label>
+          <input type="text" name="bank_account" class="form-input" value="{{ current_user.bank_account }}" placeholder="SA00 0000 0000 0000 أو رقم الحساب">
+        </div>
+        <div class="form-group">
+          <label class="form-label">📱 فودافون كاش (مصر)</label>
+          <input type="text" name="wallet_vodafone" class="form-input" value="{{ current_user.wallet_vodafone }}" placeholder="رقم المحفظة مثال: 01xxxxxxxxx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">⚡ إنستاباي (مصر)</label>
+          <input type="text" name="wallet_instapay" class="form-input" value="{{ current_user.wallet_instapay }}" placeholder="رابط InstaPay أو معرف الحساب">
+        </div>
+        <div class="form-group">
+          <label class="form-label">📲 STC Pay (السعودية)</label>
+          <input type="text" name="wallet_stcpay" class="form-input" value="{{ current_user.wallet_stcpay }}" placeholder="رقم جوال STC Pay">
+        </div>
+        <div class="form-group">
+          <label class="form-label">💰 محفظة أخرى / PayPal / بنك رقمي</label>
+          <input type="text" name="wallet_other" class="form-input" value="{{ current_user.wallet_other }}" placeholder="رابط أو رقم محفظة أخرى">
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">📝 تعليمات إضافية للدفع</label>
+          <textarea name="payment_notes" class="form-input" rows="3" placeholder="مثال: يرجى إرسال إيصال التحويل على واتساب لتفعيل الاشتراك...">{{ current_user.payment_notes }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div style="font-size:18px;font-weight:600;margin-bottom:1rem;">🔐 تغيير كلمة المرور</div>
       <div class="form-group" style="max-width:300px;">
         <label class="form-label">كلمة مرور جديدة (اتركها فارغة للإبقاء)</label>
         <input type="password" name="new_password" class="form-input" placeholder="••••••••">
@@ -123,7 +158,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
     </div>
 
     <div style="display:flex;gap:.75rem;align-items:center;">
-      <button type="submit" class="btn btn-primary" style="padding:.8rem 2.5rem;font-size:15px;">💾 حفظ التغييرات</button>
+      <button type="submit" class="btn btn-primary" style="padding:.9rem 2.5rem;font-size:17px;">💾 حفظ التغييرات</button>
       <a href="{{ url_for('contact') }}" target="_blank" class="btn btn-ghost">👁 معاينة صفحة التواصل</a>
     </div>
   </form>
