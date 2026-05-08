@@ -87,44 +87,86 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 
         {% if enrollment and enrollment.is_approved %}
           <a href="{{ url_for('learn', course_id=course.id) }}" class="btn btn-primary" style="width:100%;justify-content:center;padding:.9rem;font-size:16px;">▶ متابعة التعلم</a>
         {% elif enrollment %}
-          <div class="btn" style="width:100%;justify-content:center;padding:.9rem;font-size:17px;background:var(--gold-bg);color:var(--gold);border:0.5px solid var(--gold-bd);">⏳ في انتظار الموافقة</div>
-        {% elif current_user.is_authenticated %}
-          <form method="POST" action="{{ url_for('enroll', course_id=course.id) }}">
-            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:.9rem;font-size:16px;">
-              {% if course.is_free or course.price==0 %}التسجيل المجاني{% else %}التسجيل في الكورس{% endif %}
-            </button>
-          </form>
-          {% if not (course.is_free or course.price==0) %}
-          <div style="margin-top:1.25rem;background:var(--gold-bg);border:1px solid var(--gold-bd);border-radius:12px;padding:1.1rem;">
-            <div style="font-size:17px;font-weight:700;color:var(--gold);margin-bottom:.75rem;">💳 طريقة الدفع</div>
-            {% set sh = course.sheikh %}
-            {% if sh.bank_name or sh.bank_account %}
-            <div style="margin-bottom:.6rem;">
-              <div style="font-size:17px;font-weight:600;color:var(--tx);">🏦 {{ sh.bank_name }}</div>
-              <div style="font-size:17px;color:var(--tx2);word-break:break-all;">{{ sh.bank_account }}</div>
-            </div>
-            {% endif %}
 
-            {% if sh.wallet_vodafone %}
-            <div style="font-size:17px;color:var(--tx2);margin-bottom:.4rem;">📱 فودافون كاش: <strong>{{ sh.wallet_vodafone }}</strong></div>
-            {% endif %}
-            {% if sh.wallet_instapay %}
-            <div style="font-size:17px;color:var(--tx2);margin-bottom:.4rem;">⚡ إنستاباي: <strong>{{ sh.wallet_instapay }}</strong></div>
-            {% endif %}
-            {% if sh.wallet_stcpay %}
-            <div style="font-size:17px;color:var(--tx2);margin-bottom:.4rem;">📲 STC Pay: <strong>{{ sh.wallet_stcpay }}</strong></div>
-            {% endif %}
-            {% if sh.wallet_other %}
-            <div style="font-size:17px;color:var(--tx2);margin-bottom:.4rem;">💰 {{ sh.wallet_other }}</div>
-            {% endif %}
-            {% if sh.payment_notes %}
-            <div style="margin-top:.75rem;padding:.7rem;background:#fff;border-radius:8px;font-size:17px;color:var(--tx2);line-height:1.8;">{{ sh.payment_notes }}</div>
-            {% endif %}
-            {% if not (sh.bank_name or sh.bank_account or sh.wallet_vodafone or sh.wallet_instapay or sh.wallet_stcpay or sh.wallet_other) %}
-            <div style="font-size:17px;color:var(--tx3);">تواصل مع الشيخ مباشرة لمعرفة طريقة الدفع.</div>
-            {% endif %}
-          </div>
-          {% endif %}
+  <div class="btn" style="width:100%;justify-content:center;padding:.9rem;font-size:17px;background:var(--gold-bg);color:var(--gold);border:0.5px solid var(--gold-bd);">
+    ⏳ في انتظار الموافقة
+  </div>
+
+  {% if not (course.is_free or course.price==0) %}
+  <div style="margin-top:1.25rem;background:var(--gold-bg);border:1px solid var(--gold-bd);border-radius:12px;padding:1.1rem;">
+
+    <div style="font-size:17px;font-weight:700;color:var(--gold);margin-bottom:.75rem;">
+      💳 طريقة الدفع
+    </div>
+
+    {% set sh = course.sheikh %}
+
+    {% if sh.bank_name or sh.bank_account %}
+    <div style="margin-bottom:.6rem;">
+      <div style="font-size:17px;font-weight:600;color:var(--tx);">
+        🏦 {{ sh.bank_name }}
+      </div>
+
+      <div style="font-size:17px;color:var(--tx2);word-break:break-all;">
+        {{ sh.bank_account }}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if sh.wallet_vodafone %}
+    <div style="font-size:17px;color:var(--tx2);margin-bottom:.4rem;">
+      📱 فودافون كاش:
+      <strong>{{ sh.wallet_vodafone }}</strong>
+    </div>
+    {% endif %}
+
+    {% if sh.wallet_instapay %}
+    <div style="font-size:17px;color:var(--tx2);margin-bottom:.4rem;">
+      ⚡ إنستاباي:
+      <strong>{{ sh.wallet_instapay }}</strong>
+    </div>
+    {% endif %}
+
+    {% if sh.wallet_stcpay %}
+    <div style="font-size:17px;color:var(--tx2);margin-bottom:.4rem;">
+      📲 STC Pay:
+      <strong>{{ sh.wallet_stcpay }}</strong>
+    </div>
+    {% endif %}
+
+    {% if sh.wallet_other %}
+    <div style="font-size:17px;color:var(--tx2);margin-bottom:.4rem;">
+      💰 {{ sh.wallet_other }}
+    </div>
+    {% endif %}
+
+    {% if sh.payment_notes %}
+    <div style="margin-top:.75rem;padding:.7rem;background:#fff;border-radius:8px;font-size:17px;color:var(--tx2);line-height:1.8;">
+      {{ sh.payment_notes }}
+    </div>
+    {% endif %}
+
+  </div>
+  {% endif %}
+        {% elif current_user.is_authenticated %}
+
+  {% if current_user.id == course.sheikh_id %}
+
+    <a href="{{ url_for('learn', course_id=course.id) }}"
+       class="btn btn-primary"
+       style="width:100%;justify-content:center;padding:.9rem;font-size:16px;">
+       ▶ دخول الكورس
+    </a>
+
+  {% else %}
+
+    <form method="POST" action="{{ url_for('enroll', course_id=course.id) }}">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:.9rem;font-size:16px;">
+        {% if course.is_free or course.price==0 %}التسجيل المجاني{% else %}التسجيل في الكورس{% endif %}
+      </button>
+    </form>
+
+  {% endif %}
         {% else %}
           <a href="{{ url_for('register') }}" class="btn btn-primary" style="width:100%;justify-content:center;padding:.9rem;font-size:16px;">إنشاء حساب للتسجيل</a>
         {% endif %}

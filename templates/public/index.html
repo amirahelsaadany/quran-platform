@@ -215,7 +215,7 @@ footer a:hover{color:#FFD700;}
       <div class="sheikh-info">
         <div class="sheikh-name">{% if sheikh %}{{ sheikh.name }}{% else %}الشيخ المقرئ{% endif %}</div>
 
-        <div class="sheikh-title">مقرئ ومعلم القرآن الكريم</div>
+
         {% if sheikh and sheikh.bio %}
         <div class="sheikh-bio">{{ sheikh.bio }}</div>
         {% endif %}
@@ -262,7 +262,20 @@ footer a:hover{color:#FFD700;}
     {% for course in courses %}
     <a href="{{ url_for('course_detail', course_id=course.id) }}" class="c-card reveal">
       <div class="c-thumb {{ thumbs[loop.index0 % 6] }}">
-        <span>{{ icons[loop.index0 % 6] }}</span>
+
+  {% if course.thumbnail %}
+    <img src="{{ url_for('static', filename=course.thumbnail) }}"
+         alt="{{ course.title }}"
+         style="
+         width:100%;
+         height:100%;
+         object-fit:cover;
+         position:absolute;
+         inset:0;
+         ">
+  {% else %}
+    <span>{{ icons[loop.index0 % 6] }}</span>
+  {% endif %}
         <span style="position:absolute;top:10px;right:10px;" class="{% if course.is_free or course.price==0 %}badge-free{% else %}badge-paid{% endif %}">
           {% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} {% if current_user.is_authenticated %}{{ get_currency(current_user.country) }}{% else %}ر.س{% endif %}{% endif %}
         </span>
@@ -341,7 +354,78 @@ footer a:hover{color:#FFD700;}
   </div>
 </div>
 {% endif %}
+<section style="padding:70px 0;">
 
+  <div class="container">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;">
+
+      <h2 style="font-size:38px;">
+        👨‍🏫 المعلمون
+      </h2>
+
+      <a href="{{ url_for('teachers') }}"
+         style="color:var(--em);font-weight:700;">
+         عرض الجميع
+      </a>
+
+    </div>
+
+    <div style="
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:24px;
+    ">
+
+    {% for teacher in teachers[:4] %}
+
+      <div style="
+      background:#fff;
+      border:1px solid #ddd;
+      border-radius:18px;
+      overflow:hidden;
+      ">
+
+        {% if teacher.image %}
+        <img src="{{ url_for('static', filename=teacher.image) }}"
+             style="
+             width:100%;
+             height:260px;
+             object-fit:cover;
+             ">
+        {% endif %}
+
+        <div style="padding:20px;">
+
+          <h3 style="margin-bottom:10px;">
+            {{ teacher.name }}
+          </h3>
+
+          <div style="
+          color:#777;
+          margin-bottom:12px;
+          ">
+            {{ teacher.specialty }}
+          </div>
+
+          <p style="
+          line-height:1.8;
+          color:#555;
+          ">
+            {{ teacher.bio[:90] }}
+          </p>
+
+        </div>
+
+      </div>
+
+    {% endfor %}
+
+    </div>
+
+  </div>
+
+</section>
 <!-- AYAH 2 -->
 <div class="ayah">﴿ إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ ﴾</div>
 
@@ -476,4 +560,5 @@ document.querySelectorAll('.feat').forEach((el, i) => {
   el.style.transitionDelay = (i * 0.07) + 's';
 });
 </script>
+
 {% endblock %}

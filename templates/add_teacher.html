@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}إضافة معلم{% endblock %}
+{% block extra_head %}
+<style>
+body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+.sidebar{background:#fff;border-left:0.5px solid var(--bd);padding:1.5rem 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sb-logo{padding:0 1.25rem 1.5rem;border-bottom:0.5px solid var(--bd);}
+.sb-logo .ic{width:38px;height:38px;background:linear-gradient(135deg,var(--em),var(--em-l));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+.sb-logo h2{font-family:'Amiri',serif;font-size:20px;color:var(--gold);margin-top:.5rem;}
+.sb-logo p{font-size:10px;color:var(--tx3);}
+.sb-section{padding:.75rem 1.25rem .25rem;font-size:16px;color:var(--tx3);letter-spacing:.5px;text-transform:uppercase;}
+.sb-link{display:flex;align-items:center;justify-content:flex-start;gap:.65rem;padding:.75rem 1.25rem;font-size:16px;color:var(--tx2);transition:all .15s;cursor:pointer;border-right:2px solid transparent;}
+.sb-link:hover,.sb-link.active{background:var(--em-bg);color:var(--em);border-right-color:var(--em);}
+.sb-link .ic{font-size:16px;min-width:20px;}
+.sb-user{margin-top:auto;padding:1rem 1.25rem;border-top:0.5px solid var(--bd);}
+.sb-user .name{font-size:16px;font-weight:500;color:var(--tx);}
+.sb-user .role{font-size:16px;color:var(--em);}
+.main{background:var(--bg);padding:2rem;overflow-y:auto;}
+.page-title{font-family:'Amiri',serif;font-size:28px;color:var(--tx);margin-bottom:.25rem;}
+.page-sub{font-size:16px;color:var(--tx2);margin-bottom:2rem;}
+.form-card{background:#fff;border:0.5px solid var(--bd);border-radius:14px;padding:2rem;max-width:600px;}
+.form-section{margin-bottom:1.5rem;}
+.form-section-title{font-size:18px;font-weight:600;color:var(--tx);margin-bottom:1rem;padding-bottom:.75rem;border-bottom:0.5px solid var(--bd);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+.form-row.full{grid-template-columns:1fr;}
+.image-preview{width:120px;height:120px;border:2px dashed var(--bd2);border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--bg3);overflow:hidden;margin-top:.5rem;}
+.image-preview img{width:100%;height:100%;object-fit:cover;}
+.checkbox-group{display:flex;align-items:center;gap:.75rem;padding:1rem;background:var(--em-bg);border-radius:10px;border:0.5px solid var(--em-bd);}
+.checkbox-group input[type="checkbox"]{width:20px;height:20px;cursor:pointer;}
+.checkbox-group label{cursor:pointer;flex:1;margin:0;font-size:16px;color:var(--tx);}
+.form-actions{display:flex;gap:1rem;margin-top:2rem;}
+.form-actions .btn{flex:1;}
+</style>
+{% endblock %}
+{% block body %}
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="ic">📖</div>
+    <h2>نور القرآن</h2>
+    <p>لوحة تحكم الشيخ</p>
+  </div>
+  <div class="sb-section">الرئيسية</div>
+  <a href="{{ url_for('sheikh_dashboard') }}" class="sb-link"><span class="ic">🏠</span>لوحة التحكم</a>
+  <div class="sb-section">الكورسات</div>
+  <a href="{{ url_for('sheikh_courses') }}" class="sb-link"><span class="ic">📚</span>كورساتي</a>
+  <a href="{{ url_for('new_course') }}" class="sb-link"><span class="ic">➕</span>كورس جديد</a>
+  <a href="{{ url_for('add_teacher') }}" class="sb-link active"><span class="ic">👨‍🏫</span>إضافة معلم</a>
+  <a href="{{ url_for('teachers') }}" class="sb-link"><span class="ic">👥</span>المعلمون</a>
+  <div class="sb-section">التواصل</div>
+  <a href="{{ url_for('sheikh_live') }}" class="sb-link"><span class="ic">📡</span>الجلسات المباشرة</a>
+  <a href="{{ url_for('sheikh_announcements') }}" class="sb-link"><span class="ic">📢</span>الإعلانات</a>
+  <a href="{{ url_for('sheikh_students') }}" class="sb-link"><span class="ic">👥</span>الطلاب</a>
+  <div class="sb-section">الحساب</div>
+  <a href="{{ url_for('sheikh_profile') }}" class="sb-link"><span class="ic">👤</span>ملفي الشخصي</a>
+  <a href="{{ url_for('index') }}" class="sb-link"><span class="ic">🌐</span>المنصة العامة</a>
+  <a href="{{ url_for('logout') }}" class="sb-link"><span class="ic">🚪</span>تسجيل الخروج</a>
+  <div class="sb-user">
+    <div class="name">{{ current_user.name }}</div>
+    <div class="role">شيخ ومقرئ</div>
+  </div>
+</div>
+<div class="main">
+  <div style="margin-bottom:1.25rem;">
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in msgs %}<div class="flash flash-{{ cat }}">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+  </div>
+  
+  <div class="page-title">إضافة معلم جديد</div>
+  <div class="page-sub">أضف معلماً جديداً لمنصتك التعليمية</div>
+
+  <div class="form-card">
+    <form method="POST" enctype="multipart/form-data">
+      
+      <!-- معلومات أساسية -->
+      <div class="form-section">
+        <div class="form-section-title">📋 المعلومات الأساسية</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">اسم المعلم *</label>
+            <input type="text" name="name" required class="form-input" placeholder="أدخل اسم المعلم">
+          </div>
+          <div class="form-group">
+            <label class="form-label">التخصص</label>
+            <input type="text" name="specialty" class="form-input" placeholder="مثال: تجويد، حفظ، إقراء">
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group">
+            <label class="form-label">النبذة الشخصية</label>
+            <textarea name="bio" class="form-input" placeholder="اكتب نبذة قصيرة عن المعلم..." style="min-height:120px;"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- معلومات التواصل -->
+      <div class="form-section">
+        <div class="form-section-title">📞 معلومات التواصل</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">رقم الهاتف</label>
+            <input type="tel" name="phone" class="form-input" placeholder="مثال: +966501234567">
+          </div>
+          <div class="form-group">
+            <label class="form-label">البريد الإلكتروني</label>
+            <input type="email" name="email" class="form-input" placeholder="مثال: teacher@example.com">
+          </div>
+        </div>
+      </div>
+
+      <!-- الصورة الشخصية -->
+      <div class="form-section">
+        <div class="form-section-title">🖼️ الصورة الشخصية</div>
+        <div class="form-group">
+          <label class="form-label">اختر صورة المعلم</label>
+          <input type="file" name="image" accept="image/*" class="form-input" id="imageInput" onchange="previewImage(event)">
+          <div class="image-preview" id="imagePreview">
+            <span style="color:var(--tx3);font-size:14px;">لا توجد صورة</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- الصلاحيات -->
+      <div class="form-section">
+        <div class="form-section-title">🔐 الصلاحيات</div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="canUpload" name="can_upload_lessons">
+          <label for="canUpload">السماح للمعلم برفع الدروس والمواد التعليمية</label>
+        </div>
+      </div>
+
+      <!-- الأزرار -->
+      <div class="form-actions">
+        <a href="{{ url_for('teachers') }}" class="btn btn-ghost">إلغاء</a>
+        <button type="submit" class="btn btn-primary">
+          <span>✅</span> إضافة المعلم
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function previewImage(event) {
+  const file = event.target.files[0];
+  const preview = document.getElementById('imagePreview');
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.innerHTML = `<img src="${e.target.result}" alt="معاينة الصورة">`;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    preview.innerHTML = '<span style="color:var(--tx3);font-size:14px;">لا توجد صورة</span>';
+  }
+}
+</script>
+{% endblock %}

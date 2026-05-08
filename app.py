@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, flash, session, send_from_directory, jsonify
+from flask import Flask, render_template, redirect, url_for, request, flash, session, send_from_directory, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -80,6 +80,18 @@ class Course(db.Model):
     lessons = db.relationship('Lesson', backref='course', lazy=True, cascade='all, delete-orphan')
     enrollments = db.relationship('Enrollment', backref='course', lazy=True, cascade='all, delete-orphan')
 
+class Teacher(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    specialty = db.Column(db.String(120), default='')
+    bio = db.Column(db.Text, default='')
+    image = db.Column(db.String(300), default='')
+    phone = db.Column(db.String(50), default='')
+    email = db.Column(db.String(120), default='')
+    sheikh_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    can_upload_lessons = db.Column(db.Boolean, default=False)  # صلاحية رفع الدروس
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class Lesson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -94,6 +106,8 @@ class Lesson(db.Model):
     materials = db.relationship('Material', backref='lesson', lazy=True, cascade='all, delete-orphan')
     progress = db.relationship('Progress', backref='lesson', lazy=True, cascade='all, delete-orphan')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_live = db.Column(db.Boolean, default=False)
+    live_link = db.Column(db.String(500), default='')
 
 class Material(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -259,18 +273,43 @@ def logout():
 # ─── Public Routes ────────────────────────────────────────
 @app.route('/')
 def index():
-    courses = Course.query.filter_by(is_published=True).order_by(Course.created_at.desc()).limit(6).all()
-    live_sessions = LiveSession.query.filter_by(is_active=True).order_by(LiveSession.scheduled_at).limit(3).all()
-    announcements = Announcement.query.order_by(Announcement.created_at.desc()).limit(3).all()
+
+    courses = Course.query.filter_by(
+        is_published=True
+    ).order_by(
+        Course.created_at.desc()
+    ).limit(6).all()
+
+    live_sessions = LiveSession.query.filter_by(
+        is_active=True
+    ).order_by(
+        LiveSession.scheduled_at
+    ).limit(3).all()
+
+    announcements = Announcement.query.order_by(
+        Announcement.created_at.desc()
+    ).limit(3).all()
+
     sheikh = User.query.filter_by(role='sheikh').first()
+
+    teachers = Teacher.query.all()
+
     stats = {
         'students': User.query.filter_by(role='student').count(),
         'courses': Course.query.filter_by(is_published=True).count(),
         'lessons': Lesson.query.count()
     }
-    return render_template('public/index.html', courses=courses, live_sessions=live_sessions,
-                           announcements=announcements, stats=stats, sheikh=sheikh, hero_photo=sheikh.hero_photo if sheikh else '')
 
+    return render_template(
+        'public/index.html',
+        courses=courses,
+        live_sessions=live_sessions,
+        announcements=announcements,
+        stats=stats,
+        sheikh=sheikh,
+        teachers=teachers,
+        hero_photo=sheikh.hero_photo if sheikh else ''
+    )
 @app.route('/courses')
 def courses_list():
     category = request.args.get('category', '')
@@ -317,9 +356,10 @@ def enroll(course_id):
 def learn(course_id, lesson_id=None):
     course = Course.query.get_or_404(course_id)
     enrollment = Enrollment.query.filter_by(student_id=current_user.id, course_id=course_id).first()
-    if not enrollment or not enrollment.is_approved:
-        flash('يجب التسجيل في الكورس أولاً', 'error')
-        return redirect(url_for('course_detail', course_id=course_id))
+    if current_user.id != course.sheikh_id:
+        if not enrollment or not enrollment.is_approved:
+            flash('يجب التسجيل في الكورس أولاً', 'error')
+            return redirect(url_for('course_detail', course_id=course.id))
     lessons = Lesson.query.filter_by(course_id=course_id).order_by(Lesson.order_num).all()
     if not lessons:
         flash('لا توجد دروس بعد', 'info')
@@ -479,6 +519,7 @@ def new_lesson(course_id):
         if allowed_file(f.filename, ALLOWED_IMG):
             lesson_thumb = save_file(f, 'thumbnails')
     count = Lesson.query.filter_by(course_id=course_id).count()
+    lesson_type = request.form.get('lesson_type')
     lesson = Lesson(
         title=request.form.get('title'),
         description=request.form.get('description', ''),
@@ -488,7 +529,9 @@ def new_lesson(course_id):
         duration=request.form.get('duration', ''),
         order_num=count + 1,
         is_free_preview=request.form.get('is_free_preview') == 'on',
-        course_id=course_id
+        course_id=course_id,
+        is_live=(lesson_type == 'live'),
+        live_link=request.form.get('video_url', '')
     )
     db.session.add(lesson)
     db.session.flush()
@@ -701,6 +744,73 @@ for _sub in ['thumbnails', 'videos', 'avatars', 'materials', 'announcements']:
 
 init_db()
 
+
+
+@app.route('/add-teacher', methods=['GET', 'POST'])
+@login_required
+def add_teacher():
+    if current_user.role != 'sheikh':
+        abort(403)
+    if request.method == 'POST':
+        image_file = request.files.get('image')
+        image_path = ''
+        if image_file and image_file.filename:
+            if allowed_file(image_file.filename, ALLOWED_IMG):
+                image_path = save_file(image_file, 'avatars')
+        can_upload = request.form.get('can_upload_lessons') == 'on'
+        teacher = Teacher(
+            name=request.form.get('name'),
+            specialty=request.form.get('specialty'),
+            bio=request.form.get('bio'),
+            phone=request.form.get('phone'),
+            email=request.form.get('email'),
+            image=image_path,
+            sheikh_id=current_user.id,
+            can_upload_lessons=can_upload
+        )
+        db.session.add(teacher)
+        db.session.commit()
+        flash('تم إضافة المعلم بنجاح ✅', 'success')
+        return redirect(url_for('teachers'))
+    return render_template('add_teacher.html')
+
+@app.route('/teacher/<int:teacher_id>/delete', methods=['POST'])
+@login_required
+def delete_teacher(teacher_id):
+    if current_user.role != 'sheikh':
+        abort(403)
+    teacher = Teacher.query.get_or_404(teacher_id)
+    if teacher.sheikh_id != current_user.id:
+        abort(403)
+    db.session.delete(teacher)
+    db.session.commit()
+    flash('تم حذف المعلم بنجاح', 'success')
+    return redirect(url_for('teachers'))
+
+@app.route('/teacher/<int:teacher_id>/toggle-permissions', methods=['POST'])
+@login_required
+def toggle_teacher_permissions(teacher_id):
+    if current_user.role != 'sheikh':
+        abort(403)
+    teacher = Teacher.query.get_or_404(teacher_id)
+    if teacher.sheikh_id != current_user.id:
+        abort(403)
+    teacher.can_upload_lessons = not teacher.can_upload_lessons
+    db.session.commit()
+    status = 'مفعلة' if teacher.can_upload_lessons else 'معطلة'
+    flash(f'تم تحديث صلاحيات المعلم - الرفع: {status}', 'success')
+    return redirect(url_for('teachers'))
+
+@app.route('/teachers')
+def teachers():
+    if current_user.is_authenticated and current_user.role == 'sheikh':
+        teachers = Teacher.query.filter_by(sheikh_id=current_user.id).all()
+        return render_template('teachers.html', teachers=teachers, is_sheikh=True)
+    else:
+        teachers = Teacher.query.all()
+        return render_template('teachers.html', teachers=teachers, is_sheikh=False)
 if __name__ == '__main__':
     app.run(debug=os.environ.get('FLASK_DEBUG', 'true').lower() == 'true',
             host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
+

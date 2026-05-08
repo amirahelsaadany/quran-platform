@@ -48,6 +48,13 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
   <div class="sb-section">الكورسات</div>
   <a href="{{ url_for('sheikh_courses') }}" class="sb-link"><span class="ic">📚</span>كورساتي</a>
   <a href="{{ url_for('new_course') }}" class="sb-link"><span class="ic">➕</span>كورس جديد</a>
+  <a href="{{ url_for('add_teacher') }}" class="side-link">
+    👨‍🏫 إضافة معلم
+</a>
+
+<a href="{{ url_for('teachers') }}" class="side-link">
+    👥 المعلمون
+</a>
   <div class="sb-section">التواصل</div>
   <a href="{{ url_for('sheikh_live') }}" class="sb-link"><span class="ic">📡</span>الجلسات المباشرة</a>
   <a href="{{ url_for('sheikh_announcements') }}" class="sb-link"><span class="ic">📢</span>الإعلانات</a>

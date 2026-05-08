@@ -177,6 +177,16 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
             <div id="thumbName" style="font-size:16px;color:var(--em);margin-top:.3rem;"></div>
           </div>
           <div class="form-group">
+            <label style="display:block;margin-bottom:8px;">نوع الدرس</label>
+
+<select name="lesson_type"
+        style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:20px;">
+
+    <option value="recorded">درس مسجل</option>
+
+    <option value="live">جلسة مباشرة</option>
+
+</select>
             <label class="form-label">رفع فيديو (MP4, WebM...)</label>
             <div class="upload-area" onclick="document.getElementById('videoFile').click()">
               <div class="ic">🎥</div>
