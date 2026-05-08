@@ -358,18 +358,37 @@ footer a:hover{color:#FFD700;}
 
   <div class="container">
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;">
+    <div class="sec-hdr">
 
-      <h2 style="font-size:38px;">
-        👨‍🏫 المعلمون
-      </h2>
+  <div class="sec-tag">
+    المعلمون
+  </div>
 
-      <a href="{{ url_for('teachers') }}"
-         style="color:var(--em);font-weight:700;">
-         عرض الجميع
-      </a>
+  <h2 class="light-text">
+    أكفأ <span class="green">المعلمين</span>
+  </h2>
 
-    </div>
+  <p class="light-p">
+    نخبة من المعلمين المجازين بأسانيد عالية
+  </p>
+
+</div>
+    <div style="text-align:center;margin-top:2.5rem;">
+  <a href="{{ url_for('teachers') }}"
+     style="
+     background:linear-gradient(135deg,#1B5E3B,#2D8A5E);
+     color:#fff;
+     padding:.9rem 2.5rem;
+     border-radius:12px;
+     font-size:16px;
+     font-family:'Tajawal',sans-serif;
+     font-weight:600;
+     transition:all .25s;
+     display:inline-block;
+     ">
+     عرض جميع المعلمين ←
+  </a>
+</div>
 
     <div style="
     display:grid;
