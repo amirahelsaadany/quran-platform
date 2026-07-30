@@ -1,31 +1,51 @@
 from flask import Flask, render_template, redirect, url_for, request, flash, session, send_from_directory, jsonify, abort
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
-import os, uuid
+import os, uuid, json
+
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 app = Flask(__name__)
 
 # ─── Secret Key ───────────────────────────────────────────
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'quran-platform-secret-key-2024-change-in-production')
 
-# ─── Database ─────────────────────────────────────────────
-# محلياً: يستخدم SQLite تلقائياً
-# على Railway/Render: يستخدم PostgreSQL تلقائياً عبر متغير DATABASE_URL
-DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///quran_platform.db')
-# Railway يرسل postgres:// لكن SQLAlchemy يحتاج postgresql://
-if DATABASE_URL.startswith('postgres://'):
-    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_pre_ping': True,
-    'pool_recycle': 300,
-}
+# ─── Firebase / Firestore ──────────────────────────────────
+# ثلاث طرق لتوفير بيانات اعتماد Firebase (بالأولوية):
+# 1) متغير بيئة FIREBASE_CREDENTIALS_JSON يحتوي محتوى ملف service-account كـ JSON كامل (مستخدم في Railway/Render)
+# 2) متغير بيئة FIREBASE_CREDENTIALS_PATH يشير إلى مسار ملف service account على القرص
+# 3) ملف firebase-credentials.json في مجلد المشروع (للتشغيل المحلي)
+def _init_firebase():
+    if firebase_admin._apps:
+        return firestore.client()
 
-# ─── Uploads ──────────────────────────────────────────────
+    cred = None
+    raw_json = os.environ.get('FIREBASE_CREDENTIALS_JSON')
+    cred_path = os.environ.get('FIREBASE_CREDENTIALS_PATH')
+    local_default = os.path.join(os.path.dirname(__file__), 'firebase-credentials.json')
+
+    if raw_json:
+        cred = credentials.Certificate(json.loads(raw_json))
+    elif cred_path and os.path.exists(cred_path):
+        cred = credentials.Certificate(cred_path)
+    elif os.path.exists(local_default):
+        cred = credentials.Certificate(local_default)
+    else:
+        # يحاول استخدام Application Default Credentials (مثل GOOGLE_APPLICATION_CREDENTIALS)
+        cred = credentials.ApplicationDefault()
+
+    firebase_admin.initialize_app(cred)
+    return firestore.client()
+
+fdb = _init_firebase()
+
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+
+# ─── Uploads (تبقى محلية على القرص كما كانت) ──────────────
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB
 
@@ -33,132 +53,214 @@ ALLOWED_VIDEO = {'mp4', 'webm', 'mkv', 'avi', 'mov'}
 ALLOWED_IMG = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
 ALLOWED_FILE = {'pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt', 'zip'}
 
-db = SQLAlchemy(app)
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
 
-# ─── Models ───────────────────────────────────────────────
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-    role = db.Column(db.String(20), default='student')  # 'sheikh' or 'student'
-    avatar = db.Column(db.String(200), default='')
-    bio = db.Column(db.Text, default='')
-    phone = db.Column(db.String(30), default='')
-    whatsapp = db.Column(db.String(50), default='')
-    telegram = db.Column(db.String(100), default='')
-    hero_photo = db.Column(db.String(200), default='')
-    country = db.Column(db.String(60), default='')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    is_active_account = db.Column(db.Boolean, default=True)
-    # حقول الدفع للشيخ
-    bank_account = db.Column(db.String(200), default='')        # رقم الحساب البنكي
-    bank_name = db.Column(db.String(100), default='')           # اسم البنك
-    wallet_vodafone = db.Column(db.String(50), default='')      # فودافون كاش
-    wallet_instapay = db.Column(db.String(100), default='')     # إنستاباي
-    wallet_stcpay = db.Column(db.String(50), default='')        # STC Pay
-    wallet_other = db.Column(db.String(200), default='')        # محفظة أخرى / IBAN
-    payment_notes = db.Column(db.Text, default='')              # تعليمات الدفع
-    enrollments = db.relationship('Enrollment', backref='student', lazy=True)
-    progress = db.relationship('Progress', backref='student', lazy=True)
+# ─── Firestore ID counters (للحفاظ على أرقام تسلسلية تشبه SQL) ───
+def next_id(collection_name):
+    """يولّد رقماً تسلسلياً (مثل auto-increment في SQL) محفوظاً في counters/{collection}"""
+    counter_ref = fdb.collection('counters').document(collection_name)
 
-class Course(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, default='')
-    thumbnail = db.Column(db.String(200), default='')
-    level = db.Column(db.String(30), default='مبتدئ')
-    category = db.Column(db.String(60), default='تجويد')
-    price = db.Column(db.Float, default=0.0)
-    is_free = db.Column(db.Boolean, default=False)
-    is_published = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    sheikh_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    sheikh = db.relationship('User', backref='courses')
-    lessons = db.relationship('Lesson', backref='course', lazy=True, cascade='all, delete-orphan')
-    enrollments = db.relationship('Enrollment', backref='course', lazy=True, cascade='all, delete-orphan')
+    @firestore.transactional
+    def _txn(transaction):
+        snap = counter_ref.get(transaction=transaction)
+        current = (snap.get('value') if snap.exists else 0) or 0
+        current += 1
+        transaction.set(counter_ref, {'value': current})
+        return current
 
-class Teacher(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
-    specialty = db.Column(db.String(120), default='')
-    bio = db.Column(db.Text, default='')
-    image = db.Column(db.String(300), default='')
-    phone = db.Column(db.String(50), default='')
-    email = db.Column(db.String(120), default='')
-    sheikh_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    can_upload_lessons = db.Column(db.Boolean, default=False)  # صلاحية رفع الدروس
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    return _txn(fdb.transaction())
 
-class Lesson(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, default='')
-    video_path = db.Column(db.String(300), default='')
-    video_url = db.Column(db.String(500), default='')  # YouTube/external URL
-    thumbnail = db.Column(db.String(200), default='')  # صورة الدرس
-    duration = db.Column(db.String(20), default='')
-    order_num = db.Column(db.Integer, default=0)
-    is_free_preview = db.Column(db.Boolean, default=False)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
-    materials = db.relationship('Material', backref='lesson', lazy=True, cascade='all, delete-orphan')
-    progress = db.relationship('Progress', backref='lesson', lazy=True, cascade='all, delete-orphan')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    is_live = db.Column(db.Boolean, default=False)
-    live_link = db.Column(db.String(500), default='')
 
-class Material(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    file_path = db.Column(db.String(300), nullable=False)
-    file_type = db.Column(db.String(20), default='pdf')
-    lesson_id = db.Column(db.Integer, db.ForeignKey('lesson.id'), nullable=False)
+def _bump_counter_if_needed(collection_name, doc_id):
+    """يُستخدم عند إدخال مستند بمعرّف محدد مسبقاً (كما في سكربت الترحيل) للحفاظ على تناسق العداد"""
+    try:
+        n = int(doc_id)
+    except (TypeError, ValueError):
+        return
+    counter_ref = fdb.collection('counters').document(collection_name)
+    snap = counter_ref.get()
+    current = (snap.get('value') if snap.exists else 0) or 0
+    if n > current:
+        counter_ref.set({'value': n})
 
-class Enrollment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
-    enrolled_at = db.Column(db.DateTime, default=datetime.utcnow)
-    is_approved = db.Column(db.Boolean, default=True)  # free=auto, paid=manual
 
-class Progress(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    lesson_id = db.Column(db.Integer, db.ForeignKey('lesson.id'), nullable=False)
-    completed = db.Column(db.Boolean, default=False)
-    watched_at = db.Column(db.DateTime, default=datetime.utcnow)
+# ─── طبقة نموذج بسيطة فوق Firestore (تُبقي شكل الكود قريباً من SQLAlchemy) ───
+class FirestoreModel:
+    collection_name = None
+    defaults = {}
 
-class LiveSession(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, default='')
-    meeting_link = db.Column(db.String(500), default='')
-    scheduled_at = db.Column(db.DateTime, nullable=False)
-    duration_minutes = db.Column(db.Integer, default=60)
-    is_active = db.Column(db.Boolean, default=True)
-    sheikh_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    sheikh = db.relationship('User', backref='live_sessions')
-    max_students = db.Column(db.Integer, default=50)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    def __init__(self, id=None, **data):
+        self.id = id
+        merged = dict(self.defaults)
+        merged.update(data)
+        for k, v in merged.items():
+            setattr(self, k, v)
 
-class Announcement(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    image = db.Column(db.String(200), default='')   # صورة الإعلان
-    sheikh_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    sheikh = db.relationship('User', backref='announcements')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    @classmethod
+    def _col(cls):
+        return fdb.collection(cls.collection_name)
+
+    @classmethod
+    def get(cls, id):
+        if id is None:
+            return None
+        doc = cls._col().document(str(id)).get()
+        if not doc.exists:
+            return None
+        return cls(id=doc.id, **doc.to_dict())
+
+    @classmethod
+    def get_or_404(cls, id):
+        obj = cls.get(id)
+        if obj is None:
+            abort(404)
+        return obj
+
+    @classmethod
+    def all(cls):
+        return [cls(id=d.id, **d.to_dict()) for d in cls._col().stream()]
+
+    @classmethod
+    def filter_by(cls, **kwargs):
+        q = cls._col()
+        for k, v in kwargs.items():
+            q = q.where(k, '==', v)
+        return [cls(id=d.id, **d.to_dict()) for d in q.stream()]
+
+    @classmethod
+    def first_by(cls, **kwargs):
+        results = cls.filter_by(**kwargs)
+        return results[0] if results else None
+
+    @classmethod
+    def count_by(cls, **kwargs):
+        return len(cls.filter_by(**kwargs)) if kwargs else len(cls.all())
+
+    def to_dict(self):
+        return {k: v for k, v in self.__dict__.items() if k != 'id'}
+
+    def save(self):
+        data = self.to_dict()
+        if self.id is None:
+            new_id = str(next_id(self.collection_name))
+            self._col().document(new_id).set(data)
+            self.id = new_id
+        else:
+            self._col().document(str(self.id)).set(data, merge=False)
+        return self
+
+    def delete(self):
+        if self.id is not None:
+            self._col().document(str(self.id)).delete()
+
+
+class User(UserMixin, FirestoreModel):
+    collection_name = 'users'
+    defaults = dict(
+        name='', email='', password='', role='student', avatar='', bio='',
+        phone='', whatsapp='', telegram='', hero_photo='', country='',
+        created_at=None, is_active_account=True,
+        bank_account='', bank_name='', wallet_vodafone='', wallet_instapay='',
+        wallet_stcpay='', wallet_other='', payment_notes=''
+    )
+
+
+class Course(FirestoreModel):
+    collection_name = 'courses'
+    defaults = dict(
+        title='', description='', thumbnail='', level='مبتدئ', category='تجويد',
+        price=0.0, is_free=False, is_published=False, created_at=None, sheikh_id=None
+    )
+
+    @property
+    def sheikh(self):
+        return User.get(self.sheikh_id)
+
+    @property
+    def lessons(self):
+        items = Lesson.filter_by(course_id=self.id)
+        items.sort(key=lambda l: (l.order_num or 0))
+        return items
+
+    @property
+    def enrollments(self):
+        return Enrollment.filter_by(course_id=self.id)
+
+
+class Teacher(FirestoreModel):
+    collection_name = 'teachers'
+    defaults = dict(
+        name='', specialty='', bio='', image='', phone='', email='',
+        sheikh_id=None, can_upload_lessons=False, created_at=None
+    )
+
+
+class Lesson(FirestoreModel):
+    collection_name = 'lessons'
+    defaults = dict(
+        title='', description='', video_path='', video_url='', thumbnail='',
+        duration='', order_num=0, is_free_preview=False, course_id=None,
+        created_at=None, is_live=False, live_link=''
+    )
+
+    @property
+    def materials(self):
+        return Material.filter_by(lesson_id=self.id)
+
+
+class Material(FirestoreModel):
+    collection_name = 'materials'
+    defaults = dict(title='', file_path='', file_type='pdf', lesson_id=None)
+
+
+class Enrollment(FirestoreModel):
+    collection_name = 'enrollments'
+    defaults = dict(student_id=None, course_id=None, enrolled_at=None, is_approved=True)
+
+    @property
+    def student(self):
+        return User.get(self.student_id)
+
+    @property
+    def course(self):
+        return Course.get(self.course_id)
+
+
+class Progress(FirestoreModel):
+    collection_name = 'progress'
+    defaults = dict(student_id=None, lesson_id=None, completed=False, watched_at=None)
+
+
+class LiveSession(FirestoreModel):
+    collection_name = 'live_sessions'
+    defaults = dict(
+        title='', description='', meeting_link='', scheduled_at=None,
+        duration_minutes=60, is_active=True, sheikh_id=None,
+        max_students=50, created_at=None
+    )
+
+    @property
+    def sheikh(self):
+        return User.get(self.sheikh_id)
+
+
+class Announcement(FirestoreModel):
+    collection_name = 'announcements'
+    defaults = dict(title='', content='', image='', sheikh_id=None, created_at=None)
+
+    @property
+    def sheikh(self):
+        return User.get(self.sheikh_id)
+
 
 # ─── Helpers ──────────────────────────────────────────────
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return User.get(user_id)
+
 
 def allowed_file(filename, allowed):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed
+
 
 def save_file(file, subfolder):
     ext = file.filename.rsplit('.', 1)[1].lower()
@@ -168,21 +270,24 @@ def save_file(file, subfolder):
     file.save(path)
     return f"uploads/{subfolder}/{fname}"
 
+
 def get_enrollment(course_id):
     if not current_user.is_authenticated:
         return None
-    return Enrollment.query.filter_by(student_id=current_user.id, course_id=course_id).first()
+    return Enrollment.first_by(student_id=current_user.id, course_id=str(course_id))
+
 
 def get_progress_pct(course_id, student_id):
-    lessons = Lesson.query.filter_by(course_id=course_id).all()
+    lessons = Lesson.filter_by(course_id=str(course_id))
     if not lessons:
         return 0
-    done = Progress.query.filter(
-        Progress.student_id == student_id,
-        Progress.lesson_id.in_([l.id for l in lessons]),
-        Progress.completed == True
-    ).count()
+    lesson_ids = {l.id for l in lessons}
+    done = 0
+    for p in Progress.filter_by(student_id=str(student_id), completed=True):
+        if p.lesson_id in lesson_ids:
+            done += 1
     return round((done / len(lessons)) * 100)
+
 
 app.jinja_env.globals['get_enrollment'] = get_enrollment
 app.jinja_env.globals['get_progress_pct'] = get_progress_pct
@@ -217,14 +322,17 @@ CURRENCY_MAP = {
     'نيجيريا': ('نيرة', 'NGN', '₦'),
 }
 
+
 def get_currency(country):
-    """إرجاع (اسم العملة، الرمز المختصر) حسب البلد"""
+    """إرجاع الرمز المختصر للعملة حسب البلد"""
     if country and country in CURRENCY_MAP:
-        return CURRENCY_MAP[country][2]   # الرمز المختصر
-    return '$'   # افتراضي
+        return CURRENCY_MAP[country][2]
+    return '$'
+
 
 app.jinja_env.globals['get_currency'] = get_currency
 app.jinja_env.globals['CURRENCY_MAP'] = CURRENCY_MAP
+
 
 # ─── Auth Routes ──────────────────────────────────────────
 @app.route('/login', methods=['GET', 'POST'])
@@ -234,13 +342,14 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
-        user = User.query.filter_by(email=email).first()
+        user = User.first_by(email=email)
         if user and check_password_hash(user.password, password):
             login_user(user, remember=True)
             next_page = request.args.get('next')
             return redirect(next_page or url_for('dashboard'))
         flash('البريد الإلكتروني أو كلمة المرور غير صحيحة', 'error')
     return render_template('auth/login.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -251,18 +360,21 @@ def register():
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
         country = request.form.get('country', '')
-        if User.query.filter_by(email=email).first():
+        if User.first_by(email=email):
             flash('هذا البريد الإلكتروني مسجل مسبقاً', 'error')
             return render_template('auth/register.html')
-        user = User(name=name, email=email,
-                    password=generate_password_hash(password),
-                    country=country, role='student')
-        db.session.add(user)
-        db.session.commit()
+        user = User(
+            name=name, email=email,
+            password=generate_password_hash(password),
+            country=country, role='student',
+            created_at=datetime.utcnow()
+        )
+        user.save()
         login_user(user)
         flash('مرحباً بك! تم إنشاء حسابك بنجاح', 'success')
         return redirect(url_for('dashboard'))
     return render_template('auth/register.html')
+
 
 @app.route('/logout')
 @login_required
@@ -270,34 +382,29 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+
 # ─── Public Routes ────────────────────────────────────────
 @app.route('/')
 def index():
+    published = Course.filter_by(is_published=True)
+    published.sort(key=lambda c: c.created_at or datetime.min, reverse=True)
+    courses = published[:6]
 
-    courses = Course.query.filter_by(
-        is_published=True
-    ).order_by(
-        Course.created_at.desc()
-    ).limit(6).all()
+    active_sessions = LiveSession.filter_by(is_active=True)
+    active_sessions.sort(key=lambda s: s.scheduled_at or datetime.min)
+    live_sessions = active_sessions[:3]
 
-    live_sessions = LiveSession.query.filter_by(
-        is_active=True
-    ).order_by(
-        LiveSession.scheduled_at
-    ).limit(3).all()
+    all_anns = Announcement.all()
+    all_anns.sort(key=lambda a: a.created_at or datetime.min, reverse=True)
+    announcements = all_anns[:3]
 
-    announcements = Announcement.query.order_by(
-        Announcement.created_at.desc()
-    ).limit(3).all()
-
-    sheikh = User.query.filter_by(role='sheikh').first()
-
-    teachers = Teacher.query.all()
+    sheikh = User.first_by(role='sheikh')
+    teachers = Teacher.all()
 
     stats = {
-        'students': User.query.filter_by(role='student').count(),
-        'courses': Course.query.filter_by(is_published=True).count(),
-        'lessons': Lesson.query.count()
+        'students': User.count_by(role='student'),
+        'courses': Course.count_by(is_published=True),
+        'lessons': len(Lesson.all())
     }
 
     return render_template(
@@ -310,39 +417,45 @@ def index():
         teachers=teachers,
         hero_photo=sheikh.hero_photo if sheikh else ''
     )
+
+
 @app.route('/courses')
 def courses_list():
     category = request.args.get('category', '')
     level = request.args.get('level', '')
-    q = Course.query.filter_by(is_published=True)
+    courses = Course.filter_by(is_published=True)
     if category:
-        q = q.filter_by(category=category)
+        courses = [c for c in courses if c.category == category]
     if level:
-        q = q.filter_by(level=level)
-    courses = q.order_by(Course.created_at.desc()).all()
+        courses = [c for c in courses if c.level == level]
+    courses.sort(key=lambda c: c.created_at or datetime.min, reverse=True)
     return render_template('public/courses.html', courses=courses, category=category, level=level)
+
 
 @app.route('/course/<int:course_id>')
 def course_detail(course_id):
-    course = Course.query.get_or_404(course_id)
+    course = Course.get(course_id) or abort(404)
     if not course.is_published and (not current_user.is_authenticated or current_user.role != 'sheikh'):
         return redirect(url_for('courses_list'))
-    lessons = Lesson.query.filter_by(course_id=course_id).order_by(Lesson.order_num).all()
+    lessons = course.lessons
     enrollment = get_enrollment(course_id)
     return render_template('public/course_detail.html', course=course, lessons=lessons, enrollment=enrollment)
+
 
 @app.route('/enroll/<int:course_id>', methods=['POST'])
 @login_required
 def enroll(course_id):
-    course = Course.query.get_or_404(course_id)
-    existing = Enrollment.query.filter_by(student_id=current_user.id, course_id=course_id).first()
+    course = Course.get(course_id) or abort(404)
+    existing = Enrollment.first_by(student_id=current_user.id, course_id=str(course_id))
     if existing:
         flash('أنت مسجل في هذا الكورس مسبقاً', 'info')
         return redirect(url_for('course_detail', course_id=course_id))
-    enrollment = Enrollment(student_id=current_user.id, course_id=course_id,
-                            is_approved=course.is_free or course.price == 0)
-    db.session.add(enrollment)
-    db.session.commit()
+    enrollment = Enrollment(
+        student_id=current_user.id, course_id=str(course_id),
+        enrolled_at=datetime.utcnow(),
+        is_approved=course.is_free or course.price == 0
+    )
+    enrollment.save()
     if course.is_free or course.price == 0:
         flash('تم التسجيل بنجاح!', 'success')
         return redirect(url_for('learn', course_id=course_id))
@@ -350,35 +463,37 @@ def enroll(course_id):
         flash('تم إرسال طلب التسجيل، سيتم المراجعة قريباً', 'info')
         return redirect(url_for('course_detail', course_id=course_id))
 
+
 @app.route('/learn/<int:course_id>')
 @app.route('/learn/<int:course_id>/lesson/<int:lesson_id>')
 @login_required
 def learn(course_id, lesson_id=None):
-    course = Course.query.get_or_404(course_id)
-    enrollment = Enrollment.query.filter_by(student_id=current_user.id, course_id=course_id).first()
-    if current_user.id != course.sheikh_id:
+    course = Course.get(course_id) or abort(404)
+    enrollment = Enrollment.first_by(student_id=current_user.id, course_id=str(course_id))
+    if str(current_user.id) != str(course.sheikh_id):
         if not enrollment or not enrollment.is_approved:
             flash('يجب التسجيل في الكورس أولاً', 'error')
             return redirect(url_for('course_detail', course_id=course.id))
-    lessons = Lesson.query.filter_by(course_id=course_id).order_by(Lesson.order_num).all()
+    lessons = course.lessons
     if not lessons:
         flash('لا توجد دروس بعد', 'info')
         return redirect(url_for('course_detail', course_id=course_id))
-    current_lesson = Lesson.query.get(lesson_id) if lesson_id else lessons[0]
-    progress_ids = [p.lesson_id for p in Progress.query.filter_by(
-        student_id=current_user.id, completed=True).all()]
+    current_lesson = Lesson.get(lesson_id) if lesson_id else lessons[0]
+    progress_ids = [p.lesson_id for p in Progress.filter_by(student_id=current_user.id, completed=True)]
     return render_template('student/learn.html', course=course, lessons=lessons,
                            current_lesson=current_lesson, progress_ids=progress_ids)
+
 
 @app.route('/mark_complete/<int:lesson_id>', methods=['POST'])
 @login_required
 def mark_complete(lesson_id):
-    existing = Progress.query.filter_by(student_id=current_user.id, lesson_id=lesson_id).first()
+    existing = Progress.first_by(student_id=current_user.id, lesson_id=str(lesson_id))
     if not existing:
-        p = Progress(student_id=current_user.id, lesson_id=lesson_id, completed=True)
-        db.session.add(p)
-        db.session.commit()
+        p = Progress(student_id=current_user.id, lesson_id=str(lesson_id),
+                     completed=True, watched_at=datetime.utcnow())
+        p.save()
     return jsonify({'success': True})
+
 
 # ─── Dashboard ────────────────────────────────────────────
 @app.route('/dashboard')
@@ -388,19 +503,25 @@ def dashboard():
         return redirect(url_for('sheikh_dashboard'))
     return redirect(url_for('student_dashboard'))
 
+
 # ─── Student Routes ───────────────────────────────────────
 @app.route('/student/dashboard')
 @login_required
 def student_dashboard():
-    enrollments = Enrollment.query.filter_by(student_id=current_user.id, is_approved=True).all()
-    live_sessions = LiveSession.query.filter_by(is_active=True).order_by(LiveSession.scheduled_at).all()
-    announcements = Announcement.query.order_by(Announcement.created_at.desc()).limit(5).all()
+    enrollments = Enrollment.filter_by(student_id=current_user.id, is_approved=True)
+    active_sessions = LiveSession.filter_by(is_active=True)
+    active_sessions.sort(key=lambda s: s.scheduled_at or datetime.min)
+    live_sessions = active_sessions
+    all_anns = Announcement.all()
+    all_anns.sort(key=lambda a: a.created_at or datetime.min, reverse=True)
+    announcements = all_anns[:5]
     my_courses = []
     for e in enrollments:
         pct = get_progress_pct(e.course_id, current_user.id)
         my_courses.append({'course': e.course, 'progress': pct})
     return render_template('student/dashboard.html', my_courses=my_courses,
                            live_sessions=live_sessions, announcements=announcements)
+
 
 @app.route('/student/profile', methods=['GET', 'POST'])
 @login_required
@@ -417,9 +538,10 @@ def student_profile():
         new_pw = request.form.get('new_password', '')
         if new_pw:
             current_user.password = generate_password_hash(new_pw)
-        db.session.commit()
+        current_user.save()
         flash('تم حفظ التغييرات', 'success')
     return render_template('student/profile.html')
+
 
 # ─── Sheikh Routes ────────────────────────────────────────
 @app.route('/sheikh/dashboard')
@@ -427,28 +549,40 @@ def student_profile():
 def sheikh_dashboard():
     if current_user.role != 'sheikh':
         return redirect(url_for('student_dashboard'))
-    courses = Course.query.filter_by(sheikh_id=current_user.id).all()
-    total_students = db.session.query(Enrollment).join(Course).filter(
-        Course.sheikh_id == current_user.id).count()
-    total_lessons = db.session.query(Lesson).join(Course).filter(
-        Course.sheikh_id == current_user.id).count()
-    live_sessions = LiveSession.query.filter_by(sheikh_id=current_user.id).order_by(
-        LiveSession.scheduled_at.desc()).limit(5).all()
-    announcements = Announcement.query.filter_by(sheikh_id=current_user.id).order_by(
-        Announcement.created_at.desc()).limit(5).all()
-    pending = Enrollment.query.join(Course).filter(
-        Course.sheikh_id == current_user.id, Enrollment.is_approved == False).count()
+    courses = Course.filter_by(sheikh_id=current_user.id)
+    course_ids = [c.id for c in courses]
+
+    total_students = 0
+    total_lessons = 0
+    pending = 0
+    for cid in course_ids:
+        c_enrollments = Enrollment.filter_by(course_id=cid)
+        total_students += len(c_enrollments)
+        pending += len([e for e in c_enrollments if not e.is_approved])
+        total_lessons += len(Lesson.filter_by(course_id=cid))
+
+    live_sessions = LiveSession.filter_by(sheikh_id=current_user.id)
+    live_sessions.sort(key=lambda s: s.scheduled_at or datetime.min, reverse=True)
+    live_sessions = live_sessions[:5]
+
+    announcements = Announcement.filter_by(sheikh_id=current_user.id)
+    announcements.sort(key=lambda a: a.created_at or datetime.min, reverse=True)
+    announcements = announcements[:5]
+
     return render_template('sheikh/dashboard.html', courses=courses,
                            total_students=total_students, total_lessons=total_lessons,
                            live_sessions=live_sessions, announcements=announcements, pending=pending)
+
 
 @app.route('/sheikh/courses')
 @login_required
 def sheikh_courses():
     if current_user.role != 'sheikh':
         return redirect(url_for('dashboard'))
-    courses = Course.query.filter_by(sheikh_id=current_user.id).order_by(Course.created_at.desc()).all()
+    courses = Course.filter_by(sheikh_id=current_user.id)
+    courses.sort(key=lambda c: c.created_at or datetime.min, reverse=True)
     return render_template('sheikh/courses.html', courses=courses)
+
 
 @app.route('/sheikh/course/new', methods=['GET', 'POST'])
 @login_required
@@ -470,19 +604,20 @@ def new_course():
             is_free=request.form.get('is_free') == 'on',
             is_published=request.form.get('is_published') == 'on',
             thumbnail=thumb_path,
-            sheikh_id=current_user.id
+            sheikh_id=current_user.id,
+            created_at=datetime.utcnow()
         )
-        db.session.add(course)
-        db.session.commit()
+        course.save()
         flash('تم إنشاء الكورس بنجاح', 'success')
         return redirect(url_for('sheikh_course_edit', course_id=course.id))
     return render_template('sheikh/course_form.html', course=None)
 
+
 @app.route('/sheikh/course/<int:course_id>/edit', methods=['GET', 'POST'])
 @login_required
 def sheikh_course_edit(course_id):
-    course = Course.query.get_or_404(course_id)
-    if course.sheikh_id != current_user.id:
+    course = Course.get(course_id) or abort(404)
+    if str(course.sheikh_id) != str(current_user.id):
         return redirect(url_for('sheikh_dashboard'))
     if request.method == 'POST':
         course.title = request.form.get('title', course.title)
@@ -496,17 +631,18 @@ def sheikh_course_edit(course_id):
             f = request.files['thumbnail']
             if allowed_file(f.filename, ALLOWED_IMG):
                 course.thumbnail = save_file(f, 'thumbnails')
-        db.session.commit()
+        course.save()
         flash('تم حفظ التغييرات', 'success')
-    lessons = Lesson.query.filter_by(course_id=course_id).order_by(Lesson.order_num).all()
-    enrollments = Enrollment.query.filter_by(course_id=course_id).all()
+    lessons = course.lessons
+    enrollments = Enrollment.filter_by(course_id=course_id)
     return render_template('sheikh/course_edit.html', course=course, lessons=lessons, enrollments=enrollments)
+
 
 @app.route('/sheikh/course/<int:course_id>/lesson/new', methods=['POST'])
 @login_required
 def new_lesson(course_id):
-    course = Course.query.get_or_404(course_id)
-    if course.sheikh_id != current_user.id:
+    course = Course.get(course_id) or abort(404)
+    if str(course.sheikh_id) != str(current_user.id):
         return redirect(url_for('sheikh_dashboard'))
     video_path = ''
     if 'video' in request.files and request.files['video'].filename:
@@ -518,7 +654,7 @@ def new_lesson(course_id):
         f = request.files['lesson_thumbnail']
         if allowed_file(f.filename, ALLOWED_IMG):
             lesson_thumb = save_file(f, 'thumbnails')
-    count = Lesson.query.filter_by(course_id=course_id).count()
+    count = len(Lesson.filter_by(course_id=course_id))
     lesson_type = request.form.get('lesson_type')
     lesson = Lesson(
         title=request.form.get('title'),
@@ -529,12 +665,12 @@ def new_lesson(course_id):
         duration=request.form.get('duration', ''),
         order_num=count + 1,
         is_free_preview=request.form.get('is_free_preview') == 'on',
-        course_id=course_id,
+        course_id=str(course_id),
         is_live=(lesson_type == 'live'),
-        live_link=request.form.get('video_url', '')
+        live_link=request.form.get('video_url', ''),
+        created_at=datetime.utcnow()
     )
-    db.session.add(lesson)
-    db.session.flush()
+    lesson.save()
     if 'material' in request.files:
         for f in request.files.getlist('material'):
             if f.filename and allowed_file(f.filename, ALLOWED_FILE):
@@ -542,31 +678,41 @@ def new_lesson(course_id):
                 mat = Material(title=f.filename, file_path=mat_path,
                                file_type=f.filename.rsplit('.', 1)[1].lower(),
                                lesson_id=lesson.id)
-                db.session.add(mat)
-    db.session.commit()
+                mat.save()
     flash('تمت إضافة الدرس بنجاح', 'success')
     return redirect(url_for('sheikh_course_edit', course_id=course_id))
+
 
 @app.route('/sheikh/lesson/<int:lesson_id>/delete', methods=['POST'])
 @login_required
 def delete_lesson(lesson_id):
-    lesson = Lesson.query.get_or_404(lesson_id)
+    lesson = Lesson.get(lesson_id) or abort(404)
     course_id = lesson.course_id
-    db.session.delete(lesson)
-    db.session.commit()
+    for mat in lesson.materials:
+        mat.delete()
+    for p in Progress.filter_by(lesson_id=lesson_id):
+        p.delete()
+    lesson.delete()
     flash('تم حذف الدرس', 'success')
     return redirect(url_for('sheikh_course_edit', course_id=course_id))
+
 
 @app.route('/sheikh/course/<int:course_id>/delete', methods=['POST'])
 @login_required
 def delete_course(course_id):
-    course = Course.query.get_or_404(course_id)
-    if course.sheikh_id != current_user.id:
+    course = Course.get(course_id) or abort(404)
+    if str(course.sheikh_id) != str(current_user.id):
         return redirect(url_for('sheikh_dashboard'))
-    db.session.delete(course)
-    db.session.commit()
+    for lesson in course.lessons:
+        for mat in lesson.materials:
+            mat.delete()
+        lesson.delete()
+    for e in course.enrollments:
+        e.delete()
+    course.delete()
     flash('تم حذف الكورس', 'success')
     return redirect(url_for('sheikh_courses'))
+
 
 @app.route('/sheikh/live', methods=['GET', 'POST'])
 @login_required
@@ -585,27 +731,27 @@ def sheikh_live():
                 scheduled_at=dt,
                 duration_minutes=int(request.form.get('duration_minutes', 60)),
                 max_students=int(request.form.get('max_students', 50)),
-                sheikh_id=current_user.id
+                sheikh_id=current_user.id,
+                created_at=datetime.utcnow()
             )
-            db.session.add(ls)
-            db.session.commit()
+            ls.save()
             flash('تم إنشاء الجلسة المباشرة', 'success')
         elif action == 'delete':
-            ls_id = int(request.form.get('session_id'))
-            ls = LiveSession.query.get(ls_id)
-            if ls and ls.sheikh_id == current_user.id:
-                db.session.delete(ls)
-                db.session.commit()
+            ls_id = request.form.get('session_id')
+            ls = LiveSession.get(ls_id)
+            if ls and str(ls.sheikh_id) == str(current_user.id):
+                ls.delete()
                 flash('تم حذف الجلسة', 'success')
         elif action == 'toggle':
-            ls_id = int(request.form.get('session_id'))
-            ls = LiveSession.query.get(ls_id)
-            if ls and ls.sheikh_id == current_user.id:
+            ls_id = request.form.get('session_id')
+            ls = LiveSession.get(ls_id)
+            if ls and str(ls.sheikh_id) == str(current_user.id):
                 ls.is_active = not ls.is_active
-                db.session.commit()
-    sessions = LiveSession.query.filter_by(sheikh_id=current_user.id).order_by(
-        LiveSession.scheduled_at.desc()).all()
+                ls.save()
+    sessions = LiveSession.filter_by(sheikh_id=current_user.id)
+    sessions.sort(key=lambda s: s.scheduled_at or datetime.min, reverse=True)
     return render_template('sheikh/live.html', sessions=sessions)
+
 
 @app.route('/sheikh/announcements', methods=['GET', 'POST'])
 @login_required
@@ -624,41 +770,49 @@ def sheikh_announcements():
                 title=request.form.get('title'),
                 content=request.form.get('content'),
                 image=ann_image,
-                sheikh_id=current_user.id
+                sheikh_id=current_user.id,
+                created_at=datetime.utcnow()
             )
-            db.session.add(ann)
-            db.session.commit()
+            ann.save()
             flash('تم نشر الإعلان', 'success')
         elif action == 'delete':
-            ann_id = int(request.form.get('ann_id'))
-            ann = Announcement.query.get(ann_id)
-            if ann and ann.sheikh_id == current_user.id:
-                db.session.delete(ann)
-                db.session.commit()
+            ann_id = request.form.get('ann_id')
+            ann = Announcement.get(ann_id)
+            if ann and str(ann.sheikh_id) == str(current_user.id):
+                ann.delete()
                 flash('تم حذف الإعلان', 'success')
-    announcements = Announcement.query.filter_by(sheikh_id=current_user.id).order_by(
-        Announcement.created_at.desc()).all()
+    announcements = Announcement.filter_by(sheikh_id=current_user.id)
+    announcements.sort(key=lambda a: a.created_at or datetime.min, reverse=True)
     return render_template('sheikh/announcements.html', announcements=announcements)
+
 
 @app.route('/sheikh/students')
 @login_required
 def sheikh_students():
     if current_user.role != 'sheikh':
         return redirect(url_for('dashboard'))
-    enrollments = db.session.query(Enrollment, User, Course).join(
-        User, Enrollment.student_id == User.id).join(
-        Course, Enrollment.course_id == Course.id).filter(
-        Course.sheikh_id == current_user.id).order_by(Enrollment.enrolled_at.desc()).all()
+    courses = Course.filter_by(sheikh_id=current_user.id)
+    courses_by_id = {c.id: c for c in courses}
+    enrollments = []
+    for cid in courses_by_id:
+        for e in Enrollment.filter_by(course_id=cid):
+            user = User.get(e.student_id)
+            course = courses_by_id.get(e.course_id)
+            if user and course:
+                enrollments.append((e, user, course))
+    enrollments.sort(key=lambda row: row[0].enrolled_at or datetime.min, reverse=True)
     return render_template('sheikh/students.html', enrollments=enrollments)
+
 
 @app.route('/sheikh/enrollment/<int:enroll_id>/approve', methods=['POST'])
 @login_required
 def approve_enrollment(enroll_id):
-    e = Enrollment.query.get_or_404(enroll_id)
+    e = Enrollment.get(enroll_id) or abort(404)
     e.is_approved = True
-    db.session.commit()
+    e.save()
     flash('تم قبول الطالب', 'success')
     return redirect(url_for('sheikh_students'))
+
 
 @app.route('/sheikh/profile', methods=['GET', 'POST'])
 @login_required
@@ -692,60 +846,19 @@ def sheikh_profile():
         new_pw = request.form.get('new_password', '')
         if new_pw:
             current_user.password = generate_password_hash(new_pw)
-        db.session.commit()
+        current_user.save()
         flash('تم حفظ الملف الشخصي بنجاح ✅', 'success')
     return render_template('sheikh/profile.html')
+
 
 # ─── Contact Page ─────────────────────────────────────────
 @app.route('/contact')
 def contact():
-    sheikh = User.query.filter_by(role='sheikh').first()
+    sheikh = User.first_by(role='sheikh')
     return render_template('public/contact.html', sheikh=sheikh)
 
-# ─── Init DB & seed ───────────────────────────────────────
-def init_db():
-    with app.app_context():
-        db.create_all()
-        if not User.query.filter_by(email='sheikh@quran.com').first():
-            sheikh = User(
-                name='الشيخ عبدالرحمن الحسيني',
-                email='sheikh@quran.com',
-                password=generate_password_hash('sheikh123'),
-                role='sheikh',
-                bio='مقرئ متخصص برواية حفص عن عاصم، حاصل على إجازة بالسند المتصل',
-                country='المملكة العربية السعودية'
-            )
-            db.session.add(sheikh)
-            db.session.commit()
-            course = Course(
-                title='مبادئ التجويد للمبتدئين',
-                description='كورس شامل لتعلم أحكام التجويد من الصفر مع تطبيق عملي',
-                level='مبتدئ', category='تجويد',
-                price=0, is_free=True, is_published=True,
-                sheikh_id=sheikh.id
-            )
-            db.session.add(course)
-            db.session.flush()
-            for i, t in enumerate(['مقدمة في التجويد', 'أحكام النون الساكنة', 'المدود وأنواعها'], 1):
-                lesson = Lesson(title=t, order_num=i,
-                                video_url='https://www.youtube.com/embed/dQw4w9WgXcQ',
-                                duration='45 دقيقة', course_id=course.id,
-                                is_free_preview=(i == 1))
-                db.session.add(lesson)
-            db.session.commit()
-            print("✅ Database initialized with demo data")
-            print("👤 Sheikh login: sheikh@quran.com / sheikh123")
 
-# ─── تهيئة تلقائية عند أول تشغيل ─────────────────────────
-# يعمل سواء كانت SQLite أو PostgreSQL
-# إنشاء مجلدات الرفع تلقائياً
-for _sub in ['thumbnails', 'videos', 'avatars', 'materials', 'announcements']:
-    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], _sub), exist_ok=True)
-
-init_db()
-
-
-
+# ─── Teachers ─────────────────────────────────────────────
 @app.route('/add-teacher', methods=['GET', 'POST'])
 @login_required
 def add_teacher():
@@ -760,57 +873,99 @@ def add_teacher():
         can_upload = request.form.get('can_upload_lessons') == 'on'
         teacher = Teacher(
             name=request.form.get('name'),
-            specialty=request.form.get('specialty'),
-            bio=request.form.get('bio'),
-            phone=request.form.get('phone'),
-            email=request.form.get('email'),
+            specialty=request.form.get('specialty', ''),
+            bio=request.form.get('bio', ''),
+            phone=request.form.get('phone', ''),
+            email=request.form.get('email', ''),
             image=image_path,
             sheikh_id=current_user.id,
-            can_upload_lessons=can_upload
+            can_upload_lessons=can_upload,
+            created_at=datetime.utcnow()
         )
-        db.session.add(teacher)
-        db.session.commit()
+        teacher.save()
         flash('تم إضافة المعلم بنجاح ✅', 'success')
         return redirect(url_for('teachers'))
     return render_template('add_teacher.html')
+
 
 @app.route('/teacher/<int:teacher_id>/delete', methods=['POST'])
 @login_required
 def delete_teacher(teacher_id):
     if current_user.role != 'sheikh':
         abort(403)
-    teacher = Teacher.query.get_or_404(teacher_id)
-    if teacher.sheikh_id != current_user.id:
+    teacher = Teacher.get(teacher_id) or abort(404)
+    if str(teacher.sheikh_id) != str(current_user.id):
         abort(403)
-    db.session.delete(teacher)
-    db.session.commit()
+    teacher.delete()
     flash('تم حذف المعلم بنجاح', 'success')
     return redirect(url_for('teachers'))
+
 
 @app.route('/teacher/<int:teacher_id>/toggle-permissions', methods=['POST'])
 @login_required
 def toggle_teacher_permissions(teacher_id):
     if current_user.role != 'sheikh':
         abort(403)
-    teacher = Teacher.query.get_or_404(teacher_id)
-    if teacher.sheikh_id != current_user.id:
+    teacher = Teacher.get(teacher_id) or abort(404)
+    if str(teacher.sheikh_id) != str(current_user.id):
         abort(403)
     teacher.can_upload_lessons = not teacher.can_upload_lessons
-    db.session.commit()
+    teacher.save()
     status = 'مفعلة' if teacher.can_upload_lessons else 'معطلة'
     flash(f'تم تحديث صلاحيات المعلم - الرفع: {status}', 'success')
     return redirect(url_for('teachers'))
 
+
 @app.route('/teachers')
 def teachers():
     if current_user.is_authenticated and current_user.role == 'sheikh':
-        teachers = Teacher.query.filter_by(sheikh_id=current_user.id).all()
-        return render_template('teachers.html', teachers=teachers, is_sheikh=True)
+        teacher_list = Teacher.filter_by(sheikh_id=current_user.id)
+        return render_template('teachers.html', teachers=teacher_list, is_sheikh=True)
     else:
-        teachers = Teacher.query.all()
-        return render_template('teachers.html', teachers=teachers, is_sheikh=False)
+        teacher_list = Teacher.all()
+        return render_template('teachers.html', teachers=teacher_list, is_sheikh=False)
+
+
+# ─── تهيئة أولية (تعمل فقط إذا كانت قاعدة Firestore فارغة) ───
+def init_db():
+    for _sub in ['thumbnails', 'videos', 'avatars', 'materials', 'announcements']:
+        os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], _sub), exist_ok=True)
+
+    if User.first_by(email='sheikh@quran.com'):
+        return
+
+    sheikh = User(
+        name='الشيخ نظمي السعدني',
+        email='sheikh@quran.com',
+        password=generate_password_hash('sheikh123'),
+        role='sheikh',
+        bio='مقرئ متخصص برواية حفص عن عاصم، حاصل على إجازة بالسند المتصل',
+        country='المملكة العربية السعودية',
+        created_at=datetime.utcnow()
+    )
+    sheikh.save()
+    course = Course(
+        title='مبادئ التجويد للمبتدئين',
+        description='كورس شامل لتعلم أحكام التجويد من الصفر مع تطبيق عملي',
+        level='مبتدئ', category='تجويد',
+        price=0, is_free=True, is_published=True,
+        sheikh_id=sheikh.id,
+        created_at=datetime.utcnow()
+    )
+    course.save()
+    for i, t in enumerate(['مقدمة في التجويد', 'أحكام النون الساكنة', 'المدود وأنواعها'], 1):
+        lesson = Lesson(title=t, order_num=i,
+                        video_url='https://www.youtube.com/embed/dQw4w9WgXcQ',
+                        duration='45 دقيقة', course_id=course.id,
+                        is_free_preview=(i == 1), created_at=datetime.utcnow())
+        lesson.save()
+    print("✅ Firestore initialized with demo data")
+    print("👤 Sheikh login: sheikh@quran.com / sheikh123")
+
+
+init_db()
+
+
 if __name__ == '__main__':
     app.run(debug=os.environ.get('FLASK_DEBUG', 'true').lower() == 'true',
             host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
-
-

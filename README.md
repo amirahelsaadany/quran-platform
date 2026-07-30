@@ -1,11 +1,16 @@
-# 🕌 منصة نور القرآن — دليل التشغيل والنشر
+# 🕌 منصة نور القرآن — دليل التشغيل والنشر (نسخة Firebase)
 
 ## نظرة عامة على المنصة
 منصة متكاملة لتعليم القرآن الكريم تشمل:
 - **الصفحة الرئيسية**: واجهة تسويقية احترافية
 - **لوحة الشيخ**: رفع المحاضرات، إدارة الكورسات، الجلسات المباشرة، الإعلانات، متابعة الطلاب
 - **لوحة الطالب**: متابعة الكورسات، مشاهدة الفيديوهات، تتبع التقدم
-- **قاعدة البيانات**: SQLite مدمجة لا تحتاج إعداد
+- **قاعدة البيانات**: **Firebase Firestore** (سحابية، بدون إعداد سيرفر قاعدة بيانات)
+- **PWA**: يمكن تثبيت المنصة كتطبيق على الجوال/الكمبيوتر/الآيباد من المتصفح مباشرة
+
+> 🔄 كانت المنصة تعمل سابقاً بـ SQLite/PostgreSQL عبر SQLAlchemy، وتم تحويلها بالكامل
+> إلى Firebase Firestore دون أي تغيير في التصميم أو الروابط أو تجربة الاستخدام.
+> راجع `FIREBASE_SETUP.md` لتفاصيل الربط والترحيل.
 
 ---
 
@@ -14,6 +19,7 @@
 ### المتطلبات
 - Python 3.10 أو أحدث
 - pip
+- مشروع Firebase مع Firestore مفعّل + ملف بيانات اعتماد (service account)
 
 ### خطوات التشغيل
 ```bash
@@ -23,7 +29,13 @@ cd quran-platform
 # 2. تثبيت المكتبات
 pip install -r requirements.txt
 
-# 3. تشغيل المشروع
+# 3. ضع ملف بيانات اعتماد Firebase باسم firebase-credentials.json في جذر المشروع
+#    (راجع FIREBASE_SETUP.md لكيفية الحصول عليه)
+
+# 4. (مرة واحدة فقط) إذا كان لديك بيانات قديمة في quran_platform.db، رحّلها:
+python migrate_to_firestore.py
+
+# 5. تشغيل المشروع
 python app.py
 ```
 
@@ -42,50 +54,30 @@ http://localhost:5000
 
 ## 🌐 النشر على الإنترنت
 
-### الخيار 1: Railway (الأسهل — مجاني)
+راجع `DEPLOY.md` للتفاصيل الكاملة خطوة بخطوة. ملخص سريع:
 
-1. سجّل في [railway.app](https://railway.app)
-2. اضغط **New Project → Deploy from GitHub**
-3. ارفع المشروع على GitHub أولاً:
-   ```bash
-   git init
-   git add .
-   git commit -m "initial commit"
-   git remote add origin https://github.com/USERNAME/quran-platform.git
-   git push -u origin main
-   ```
-4. في Railway: اختر الـ repo → سيتعرف تلقائياً على Python
-5. أضف متغير البيئة:
-   - `SECRET_KEY` = أي نص عشوائي طويل
-6. اضغط **Deploy** — ستحصل على رابط مثل: `https://quran-platform.up.railway.app`
+### Railway (الأسهل — مجاني)
+1. ارفع المشروع على GitHub
+2. Railway → New Project → Deploy from GitHub repo
+3. أضف متغيرات البيئة:
+   - `SECRET_KEY`
+   - `FIREBASE_CREDENTIALS_JSON` (محتوى ملف service account كاملاً)
+4. Deploy
 
----
-
-### الخيار 2: Render (مجاني)
-
-1. سجّل في [render.com](https://render.com)
-2. **New → Web Service → Connect GitHub**
-3. الإعدادات:
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `gunicorn app:app`
-4. أضف متغير البيئة `SECRET_KEY`
-5. اضغط **Create Web Service**
-
----
-
-### الخيار 3: VPS (Hostinger / DigitalOcean)
-
+### VPS (Hostinger / DigitalOcean)
 ```bash
-# على السيرفر
 git clone https://github.com/USERNAME/quran-platform.git
 cd quran-platform
 pip install -r requirements.txt
 
-# تشغيل مع gunicorn
-gunicorn app:app --bind 0.0.0.0:8000 --workers 2 --daemon
+export FIREBASE_CREDENTIALS_PATH=/path/to/firebase-credentials.json
+export SECRET_KEY=your-secret-key
 
-# إعداد Nginx (اختياري للدومين)
-# /etc/nginx/sites-available/quran
+gunicorn app:app --bind 0.0.0.0:8000 --workers 2 --daemon
+```
+
+Nginx (اختياري للدومين):
+```nginx
 server {
     listen 80;
     server_name yourdomain.com;
@@ -94,7 +86,7 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
-    client_max_body_size 500M;  # للسماح برفع فيديوهات كبيرة
+    client_max_body_size 500M;
 }
 ```
 
@@ -104,37 +96,44 @@ server {
 
 ```
 quran-platform/
-├── app.py                    ← الخادم الرئيسي وقاعدة البيانات
+├── app.py                    ← الخادم الرئيسي (Flask + Firebase Firestore)
+├── migrate_to_firestore.py   ← سكربت ترحيل بيانات SQLite القديمة إلى Firestore
 ├── requirements.txt          ← المكتبات المطلوبة
+├── firebase-credentials.json ← ملف اعتماد Firebase (لا يُرفع على GitHub)
 ├── Procfile                  ← للنشر على Railway/Heroku
+├── FIREBASE_SETUP.md         ← دليل ربط Firebase بالتفصيل
+├── DEPLOY.md                 ← دليل النشر على Railway
 ├── templates/
-│   ├── base.html             ← القالب الأساسي المشترك
+│   ├── base.html             ← القالب الأساسي المشترك (+ PWA manifest/service worker)
 │   ├── auth/
-│   │   ├── login.html        ← صفحة تسجيل الدخول
-│   │   └── register.html     ← صفحة إنشاء حساب
+│   │   ├── login.html
+│   │   └── register.html
 │   ├── public/
-│   │   ├── index.html        ← الصفحة الرئيسية
-│   │   ├── courses.html      ← قائمة الكورسات
-│   │   └── course_detail.html← تفاصيل الكورس
+│   │   ├── index.html
+│   │   ├── courses.html
+│   │   └── course_detail.html
 │   ├── sheikh/
-│   │   ├── dashboard.html    ← لوحة تحكم الشيخ
-│   │   ├── courses.html      ← إدارة الكورسات
-│   │   ├── course_form.html  ← إنشاء كورس جديد
-│   │   ├── course_edit.html  ← تعديل الكورس + رفع دروس
-│   │   ├── live.html         ← الجلسات المباشرة
-│   │   ├── announcements.html← الإعلانات
-│   │   ├── students.html     ← إدارة الطلاب
-│   │   └── profile.html      ← الملف الشخصي
+│   │   ├── dashboard.html
+│   │   ├── courses.html
+│   │   ├── course_form.html
+│   │   ├── course_edit.html
+│   │   ├── live.html
+│   │   ├── announcements.html
+│   │   ├── students.html
+│   │   └── profile.html
 │   └── student/
-│       ├── dashboard.html    ← لوحة الطالب
-│       ├── learn.html        ← مشاهدة الدروس
-│       └── profile.html      ← الملف الشخصي
+│       ├── dashboard.html
+│       ├── learn.html
+│       └── profile.html
 └── static/
+    ├── manifest.json          ← ملف PWA (تثبيت المنصة كتطبيق)
+    ├── sw.js                  ← Service Worker بسيط
+    ├── icons/                 ← أيقونات PWA
     └── uploads/
-        ├── videos/           ← الفيديوهات المرفوعة
-        ├── thumbnails/       ← صور الكورسات
-        ├── materials/        ← ملفات PDF والمرفقات
-        └── avatars/          ← صور المستخدمين
+        ├── videos/
+        ├── thumbnails/
+        ├── materials/
+        └── avatars/
 ```
 
 ---
@@ -143,21 +142,25 @@ quran-platform/
 
 ```env
 SECRET_KEY=your-very-secret-key-here-change-this
-DATABASE_URL=sqlite:///quran_platform.db   # يمكن تغييرها لـ PostgreSQL
+
+# طريقة 1 (مفضّلة للنشر السحابي): محتوى ملف service account كاملاً كـ JSON
+FIREBASE_CREDENTIALS_JSON={"type": "service_account", ...}
+
+# طريقة 2 (مفيدة على VPS): مسار الملف على القرص
+FIREBASE_CREDENTIALS_PATH=/path/to/firebase-credentials.json
 ```
 
 ---
 
 ## 🔧 إضافة شيخ جديد
 
-للتحويل من طالب إلى شيخ، شغّل هذا الأمر في Python:
-
 ```python
-from app import app, db, User
+from app import app, User
+
 with app.app_context():
-    user = User.query.filter_by(email='example@email.com').first()
+    user = User.first_by(email='example@email.com')
     user.role = 'sheikh'
-    db.session.commit()
+    user.save()
     print("تم التحويل بنجاح")
 ```
 
@@ -165,16 +168,18 @@ with app.app_context():
 
 ## 🎯 المزايا الجاهزة
 
-✅ تسجيل دخول وإنشاء حساب  
-✅ رفع فيديوهات (محلياً)  
-✅ دعم روابط YouTube/خارجية  
-✅ رفع مرفقات PDF  
-✅ نظام التقدم والإكمال  
-✅ قبول/رفض تسجيل الطلاب  
-✅ جدولة الجلسات المباشرة  
-✅ نشر الإعلانات  
-✅ لوحة إحصائيات  
-✅ تصفية الكورسات  
+✅ تسجيل دخول وإنشاء حساب
+✅ رفع فيديوهات (محلياً)
+✅ دعم روابط YouTube/خارجية
+✅ رفع مرفقات PDF
+✅ نظام التقدم والإكمال
+✅ قبول/رفض تسجيل الطلاب
+✅ جدولة الجلسات المباشرة
+✅ نشر الإعلانات
+✅ لوحة إحصائيات
+✅ تصفية الكورسات
+✅ قاعدة بيانات سحابية بالكامل عبر Firebase Firestore
+✅ قابلة للتثبيت كتطبيق على أي جهاز (PWA)
 
 ---
 

@@ -5,7 +5,11 @@ __pycache__/
 .venv/
 venv/
 
-# Database (محلي فقط)
+# Firebase credentials (لا ترفعها على GitHub أبداً)
+firebase-credentials.json
+*firebase-adminsdk*.json
+
+# Database القديمة (بعد الترحيل لفايربيس تصبح غير مستخدمة)
 instance/
 *.db
 
@@ -26,3 +30,5 @@ static/uploads/avatars/*
 # OS
 .DS_Store
 Thumbs.db
+
+quran_platform.db.backup

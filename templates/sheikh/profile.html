@@ -60,7 +60,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
               <div style="font-size:17px;color:var(--em);">✓ اضغط لتغييرها</div>
             {% else %}
               <div class="ph" id="heroPH"><span class="ic">🖼</span><p>اضغط لرفع الصورة</p><small>تظهر في الصفحة الرئيسية</small></div>
-              <img id="heroPreview" src="" class="photo-preview" style="display:none">
+              <img id="heroPreview2" src="" class="photo-preview" style="display:none">
             {% endif %}
           </div>
           <input type="file" id="heroInput" name="hero_photo" accept="image/*" style="display:none" onchange="previewPhoto(this,'heroPreview','heroBox','heroPH')">
@@ -69,7 +69,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
           <div class="photo-label">👤 صورة الملف الشخصي</div>
           <div class="photo-box {% if current_user.avatar %}has-img{% endif %}" id="avatarBox" onclick="document.getElementById('avatarInput').click()">
             {% if current_user.avatar %}
-              <img id="avatarPreview" src="{{ url_for('static', filename=current_user.avatar) }}" class="photo-preview">
+              <img id="avatarPreview3" src="{{ url_for('static', filename=current_user.avatar) }}" class="photo-preview">
               <div style="font-size:17px;color:var(--em);">✓ اضغط لتغييرها</div>
             {% else %}
               <div class="ph" id="avatarPH"><span class="ic">👳</span><p>اضغط لرفع الصورة</p><small>صورتك الشخصية</small></div>
@@ -93,7 +93,10 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
         </div>
         <div class="form-group">
           <label class="form-label">البريد الإلكتروني</label>
-          <input class="form-input" value="{{ current_user.email }}" disabled style="opacity:.6;background:var(--bg3);">
+          <input type="email"
+       name="email"
+       class="form-input"
+       value="{{ current_user.email }}">
         </div>
         <div class="form-group">
           <label class="form-label">رقم الهاتف</label>

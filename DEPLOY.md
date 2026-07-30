@@ -1,14 +1,13 @@
-# 🚀 دليل النشر على Railway — خطوة بخطوة
+# 🚀 دليل النشر على Railway — خطوة بخطوة (نسخة Firebase)
 
 ## المتطلبات
 - حساب GitHub (مجاني) → https://github.com
 - حساب Railway (مجاني) → https://railway.app
+- مشروع Firebase مع Firestore مفعّل (راجع FIREBASE_SETUP.md للتفاصيل الكاملة)
 
 ---
 
 ## الخطوة 1 — رفع المشروع على GitHub
-
-### افتح PowerShell في مجلد المشروع وشغّل:
 
 ```powershell
 git init
@@ -16,19 +15,17 @@ git add .
 git commit -m "first commit"
 ```
 
-### أنشئ مستودعاً جديداً على GitHub:
+ثم على GitHub:
 1. افتح https://github.com/new
 2. اكتب اسم المستودع مثلاً: `quran-platform`
-3. اجعله **Private** (خاص)
+3. اجعله **Private** (خاص) — مهم لأن ملفات الاعتماد لا تُرفع لكنه أفضل احتياطاً
 4. اضغط **Create repository**
 
-### ارفع الكود:
 ```powershell
 git remote add origin https://github.com/USERNAME/quran-platform.git
 git branch -M main
 git push -u origin main
 ```
-> استبدل USERNAME باسم مستخدمك على GitHub
 
 ---
 
@@ -36,50 +33,48 @@ git push -u origin main
 
 1. افتح https://railway.app
 2. سجّل دخول بحساب GitHub
-3. اضغط **New Project**
-4. اختر **Deploy from GitHub repo**
-5. اختر مستودع `quran-platform`
-6. سيبدأ البناء تلقائياً ✅
+3. اضغط **New Project → Deploy from GitHub repo**
+4. اختر مستودع `quran-platform`
+5. سيبدأ البناء تلقائياً ✅ (لا حاجة لإضافة خدمة PostgreSQL بعد الآن)
 
 ---
 
-## الخطوة 3 — إضافة قاعدة بيانات PostgreSQL
+## الخطوة 3 — ربط Firebase
 
-1. في لوحة Railway، اضغط **+ New**
-2. اختر **Database → Add PostgreSQL**
-3. انتظر دقيقة حتى تنشأ قاعدة البيانات ✅
-
----
-
-## الخطوة 4 — ربط المتغيرات
-
-1. اضغط على خدمة المنصة (ليس قاعدة البيانات)
-2. اذهب لـ **Variables**
-3. اضغط **+ New Variable** وأضف:
+1. من Firebase Console → Project settings → Service accounts → **Generate new private key**
+2. افتح الملف الذي نزل وانسخ **محتواه بالكامل**
+3. في Railway، اضغط على خدمة المنصة → **Variables** → أضف:
 
 | المتغير | القيمة |
 |---------|--------|
-| `SECRET_KEY` | أي نص عشوائي طويل مثل: `my-super-secret-key-12345-quran` |
-| `DATABASE_URL` | انسخها من قاعدة البيانات تلقائياً (انظر أدناه) |
+| `SECRET_KEY` | نص عشوائي طويل مثل: `my-super-secret-key-12345-quran` |
+| `FIREBASE_CREDENTIALS_JSON` | الصق محتوى ملف JSON بالكامل هنا |
 
-### كيف تنسخ DATABASE_URL:
-1. اضغط على خدمة PostgreSQL
-2. اضغط **Connect**
-3. انسخ قيمة **DATABASE_URL**
-4. الصقها في متغيرات خدمة المنصة
+> لا حاجة لمتغير `DATABASE_URL` بعد الآن.
 
 ---
 
-## الخطوة 5 — الحصول على الرابط
+## الخطوة 4 — الحصول على الرابط
 
-1. اضغط على خدمة المنصة
-2. اضغط **Settings**
-3. تحت **Domains** اضغط **Generate Domain**
-4. ستحصل على رابط مثل: `https://quran-platform-production.up.railway.app` 🎉
+1. اضغط على خدمة المنصة → **Settings**
+2. تحت **Domains** اضغط **Generate Domain**
+3. ستحصل على رابط مثل: `https://quran-platform-production.up.railway.app` 🎉
 
 ---
 
-## ✅ بيانات الدخول بعد النشر
+## الخطوة 5 — ترحيل بياناتك القديمة (إن وُجدت)
+
+إذا كان لديك بيانات سابقة في `quran_platform.db`، شغّل الترحيل **مرة واحدة فقط** قبل أو بعد أول نشر:
+
+```bash
+python migrate_to_firestore.py
+```
+
+راجع تفاصيل الترحيل والنشر السحابي في `FIREBASE_SETUP.md`.
+
+---
+
+## ✅ بيانات الدخول الافتراضية (إن لم تُرحّل بيانات قديمة)
 
 | الدور | البريد | كلمة المرور |
 |-------|--------|-------------|
@@ -97,7 +92,7 @@ git add .
 git commit -m "وصف التغيير"
 git push
 ```
-Railway سيعيد النشر تلقائياً خلال دقيقة ✅
+Railway سيعيد النشر تلقائياً خلال دقيقة ✅ (بياناتك في Firestore تبقى كما هي، لا تتأثر بإعادة النشر)
 
 ---
 
@@ -105,11 +100,12 @@ Railway سيعيد النشر تلقائياً خلال دقيقة ✅
 
 **المشروع لا يعمل بعد النشر:**
 - تحقق من **Logs** في Railway
-- تأكد أن DATABASE_URL مضبوطة صح
+- تأكد أن `FIREBASE_CREDENTIALS_JSON` تم لصقه بالكامل وبصيغة JSON صحيحة (يبدأ بـ `{` وينتهي بـ `}`)
 
 **الصور لا تظهر بعد إعادة النشر:**
-- Railway لا يحفظ الملفات المرفوعة بين عمليات النشر
-- الحل: استخدم **Cloudinary** لحفظ الصور (مجاني) — راجع README
+- Railway لا يحفظ الملفات المرفوعة بين عمليات النشر (هذا لم يتغيّر، غير متعلق بـ Firebase)
+- الحل: استخدم **Cloudinary** أو **Firebase Storage** لحفظ الصور بشكل دائم
 
-**خطأ 500:**
-- افتح Logs في Railway وابحث عن السطر الأحمر
+**خطأ 500 متعلق بـ Firebase:**
+- افتح Logs في Railway وابحث عن رسالة `firebase_admin` أو `google.auth`
+- تأكد أن Firestore مفعّل في مشروعك على Firebase Console (وليس Realtime Database فقط)
