@@ -1,0 +1,55 @@
+ .gitignore                                         |  38 [32m+[m[31m-[m
+ .idea/.gitignore                                   |   3 [31m-[m
+ .idea/inspectionProfiles/profiles_settings.xml     |   6 [31m-[m
+ .idea/misc.xml                                     |  10 [31m-[m
+ .idea/modules.xml                                  |   8 [31m-[m
+ .idea/quran-platform (2).iml                       |  14 [31m-[m
+ .idea/vcs.xml                                      |   6 [31m-[m
+ DEPLOY.md                                          | 111 [31m---[m
+ FIREBASE_SETUP.md                                  | 104 [31m---[m
+ Procfile                                           |   2 [32m+[m[31m-[m
+ README.md                                          | 186 [31m-----[m
+ app.py                                             | 796 [32m+++++[m[31m----------------[m
+ firebase_config.py                                 |  73 [32m++[m
+ migrate.py                                         |  40 [31m--[m
+ migrate_to_firestore.py                            | 147 [31m----[m
+ models_firebase.py                                 | 475 [32m++++++++++++[m
+ nixpacks.toml                                      |   8 [31m-[m
+ railway.json                                       |  11 [31m-[m
+ requirements.txt                                   |   2 [32m+[m[31m-[m
+ runtime.txt                                        |   1 [31m-[m
+ static/icons/icon-192.png                          | Bin [31m1174[m -> [32m0[m bytes
+ static/icons/icon-512.png                          | Bin [31m3403[m -> [32m0[m bytes
+ static/manifest.json                               |  22 [31m-[m
+ static/sw.js                                       |  14 [31m-[m
+ static/uploads/announcements/.gitkeep              |   0
+ .../595c91d9082641a1b34071f184723874.jpg           | Bin [31m455128[m -> [32m0[m bytes
+ .../be6c5ade731c4a55914f0551755b06d0.jpg           | Bin [31m217887[m -> [32m0[m bytes
+ .../cea4f22be9c74dd2a329a692d8f8503c.jpg           | Bin [31m32946[m -> [32m0[m bytes
+ .../f70975181fd84a8eac6f418cd11aeba7.jpg           | Bin [31m217887[m -> [32m0[m bytes
+ static/uploads/avatars/.gitkeep                    |   0
+ static/uploads/materials/.gitkeep                  |   0
+ static/uploads/photo_2026-05-06_01-39-55.jpg       | Bin [31m54983[m -> [32m0[m bytes
+ static/uploads/thumbnails/.gitkeep                 |   0
+ static/uploads/videos/.gitkeep                     |   0
+ templates/add_teacher.html                         | 158 [31m----[m
+ templates/auth/login.html                          |  10 [32m+[m[31m-[m
+ templates/auth/register.html                       |   8 [32m+[m[31m-[m
+ templates/base.html                                |  29 [32m+[m[31m-[m
+ templates/public/contact.html                      | 169 [31m-----[m
+ templates/public/course_detail.html                | 114 [32m+[m[31m--[m
+ templates/public/courses.html                      |  35 [32m+[m[31m-[m
+ templates/public/index.html                        | 588 [32m++++[m[31m-----------[m
+ templates/sheikh/announcements.html                |  31 [32m+[m[31m-[m
+ templates/sheikh/course_edit.html                  |  68 [32m+[m[31m-[m
+ templates/sheikh/course_form.html                  |  10 [32m+[m[31m-[m
+ templates/sheikh/courses.html                      |  10 [32m+[m[31m-[m
+ templates/sheikh/dashboard.html                    |  39 [32m+[m[31m-[m
+ templates/sheikh/live.html                         |  18 [32m+[m[31m-[m
+ templates/sheikh/profile.html                      | 172 [32m++[m[31m---[m
+ templates/sheikh/students.html                     |  20 [32m+[m[31m-[m
+ templates/student/dashboard.html                   |  36 [32m+[m[31m-[m
+ templates/student/learn.html                       |  30 [32m+[m[31m-[m
+ templates/student/profile.html                     |   8 [32m+[m[31m-[m
+ templates/teachers.html                            | 219 [31m------[m
+ 54 files changed, 1066 insertions(+), 2783 deletions(-)
