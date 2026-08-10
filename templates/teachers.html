@@ -144,6 +144,9 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
             {% else %}
             <span class="badge badge-gray">❌ صلاحية الرفع معطلة</span>
             {% endif %}
+            {% if teacher.user_id %}
+            <span class="badge badge-gold">🔑 له حساب دخول</span>
+            {% endif %}
           {% endif %}
         </div>
 

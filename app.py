@@ -160,7 +160,7 @@ class User(UserMixin, FirestoreModel):
         phone='', whatsapp='', telegram='', hero_photo='', country='',
         created_at=None, is_active_account=True,
         bank_account='', bank_name='', wallet_vodafone='', wallet_instapay='',
-        wallet_stcpay='', wallet_other='', payment_notes=''
+        wallet_stcpay='', wallet_other='', payment_notes='', teacher_id=None
     )
 
 
@@ -190,8 +190,12 @@ class Teacher(FirestoreModel):
     collection_name = 'teachers'
     defaults = dict(
         name='', specialty='', bio='', image='', phone='', email='',
-        sheikh_id=None, can_upload_lessons=False, created_at=None
+        sheikh_id=None, can_upload_lessons=False, created_at=None, user_id=None
     )
+
+    @property
+    def user(self):
+        return User.get(self.user_id) if self.user_id else None
 
 
 class Lesson(FirestoreModel):
@@ -291,6 +295,27 @@ def get_progress_pct(course_id, student_id):
 
 app.jinja_env.globals['get_enrollment'] = get_enrollment
 app.jinja_env.globals['get_progress_pct'] = get_progress_pct
+
+
+def get_teacher_profile(user):
+    """يرجع بطاقة المعلم (Teacher) المرتبطة بحساب دخول المعلم الحالي، أو None"""
+    if not user or not getattr(user, 'is_authenticated', False):
+        return None
+    if user.role != 'teacher' or not user.teacher_id:
+        return None
+    return Teacher.get(user.teacher_id)
+
+
+def can_manage_course_lessons(user, course):
+    """يتحقق هل المستخدم الحالي (شيخ صاحب الكورس أو معلم مصرّح له) يقدر يدير دروس هذا الكورس"""
+    if not course:
+        return False
+    if str(course.sheikh_id) == str(user.id):
+        return True
+    teacher = get_teacher_profile(user)
+    if teacher and teacher.can_upload_lessons and str(teacher.sheikh_id) == str(course.sheikh_id):
+        return True
+    return False
 
 # خريطة العملات حسب البلد
 CURRENCY_MAP = {
@@ -501,6 +526,8 @@ def mark_complete(lesson_id):
 def dashboard():
     if current_user.role == 'sheikh':
         return redirect(url_for('sheikh_dashboard'))
+    if current_user.role == 'teacher':
+        return redirect(url_for('teacher_dashboard'))
     return redirect(url_for('student_dashboard'))
 
 
@@ -642,8 +669,9 @@ def sheikh_course_edit(course_id):
 @login_required
 def new_lesson(course_id):
     course = Course.get(course_id) or abort(404)
-    if str(course.sheikh_id) != str(current_user.id):
-        return redirect(url_for('sheikh_dashboard'))
+    if not can_manage_course_lessons(current_user, course):
+        flash('ليست لديك صلاحية رفع دروس لهذا الكورس', 'error')
+        return redirect(url_for('dashboard'))
     video_path = ''
     if 'video' in request.files and request.files['video'].filename:
         f = request.files['video']
@@ -680,6 +708,8 @@ def new_lesson(course_id):
                                lesson_id=lesson.id)
                 mat.save()
     flash('تمت إضافة الدرس بنجاح', 'success')
+    if current_user.role == 'teacher':
+        return redirect(url_for('teacher_course_lessons', course_id=course_id))
     return redirect(url_for('sheikh_course_edit', course_id=course_id))
 
 
@@ -687,6 +717,10 @@ def new_lesson(course_id):
 @login_required
 def delete_lesson(lesson_id):
     lesson = Lesson.get(lesson_id) or abort(404)
+    course = Course.get(lesson.course_id)
+    if not can_manage_course_lessons(current_user, course):
+        flash('ليست لديك صلاحية حذف دروس هذا الكورس', 'error')
+        return redirect(url_for('dashboard'))
     course_id = lesson.course_id
     for mat in lesson.materials:
         mat.delete()
@@ -694,6 +728,8 @@ def delete_lesson(lesson_id):
         p.delete()
     lesson.delete()
     flash('تم حذف الدرس', 'success')
+    if current_user.role == 'teacher':
+        return redirect(url_for('teacher_course_lessons', course_id=course_id))
     return redirect(url_for('sheikh_course_edit', course_id=course_id))
 
 
@@ -865,25 +901,49 @@ def add_teacher():
     if current_user.role != 'sheikh':
         abort(403)
     if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+        can_upload = request.form.get('can_upload_lessons') == 'on'
+
+        if not email or not password:
+            flash('البريد الإلكتروني وكلمة المرور مطلوبان لإنشاء حساب دخول للمعلم', 'error')
+            return render_template('add_teacher.html')
+        if User.first_by(email=email):
+            flash('هذا البريد الإلكتروني مستخدم مسبقاً لحساب آخر', 'error')
+            return render_template('add_teacher.html')
+
         image_file = request.files.get('image')
         image_path = ''
         if image_file and image_file.filename:
             if allowed_file(image_file.filename, ALLOWED_IMG):
                 image_path = save_file(image_file, 'avatars')
-        can_upload = request.form.get('can_upload_lessons') == 'on'
+
         teacher = Teacher(
             name=request.form.get('name'),
             specialty=request.form.get('specialty', ''),
             bio=request.form.get('bio', ''),
             phone=request.form.get('phone', ''),
-            email=request.form.get('email', ''),
+            email=email,
             image=image_path,
             sheikh_id=current_user.id,
             can_upload_lessons=can_upload,
             created_at=datetime.utcnow()
         )
         teacher.save()
-        flash('تم إضافة المعلم بنجاح ✅', 'success')
+
+        teacher_user = User(
+            name=request.form.get('name'),
+            email=email,
+            password=generate_password_hash(password),
+            role='teacher',
+            teacher_id=teacher.id,
+            created_at=datetime.utcnow()
+        )
+        teacher_user.save()
+        teacher.user_id = teacher_user.id
+        teacher.save()
+
+        flash(f'تم إضافة المعلم بنجاح ✅ — يمكنه الآن الدخول بالبريد {email} وكلمة المرور التي حددتها', 'success')
         return redirect(url_for('teachers'))
     return render_template('add_teacher.html')
 
@@ -896,8 +956,12 @@ def delete_teacher(teacher_id):
     teacher = Teacher.get(teacher_id) or abort(404)
     if str(teacher.sheikh_id) != str(current_user.id):
         abort(403)
+    if teacher.user_id:
+        linked_user = User.get(teacher.user_id)
+        if linked_user:
+            linked_user.delete()
     teacher.delete()
-    flash('تم حذف المعلم بنجاح', 'success')
+    flash('تم حذف المعلم وحسابه بنجاح', 'success')
     return redirect(url_for('teachers'))
 
 
@@ -924,6 +988,33 @@ def teachers():
     else:
         teacher_list = Teacher.all()
         return render_template('teachers.html', teachers=teacher_list, is_sheikh=False)
+
+
+# ─── لوحة تحكم المعلم (حساب دخول مستقل بصلاحية رفع الدروس فقط) ───
+@app.route('/teacher/dashboard')
+@login_required
+def teacher_dashboard():
+    if current_user.role != 'teacher':
+        return redirect(url_for('dashboard'))
+    teacher = get_teacher_profile(current_user)
+    if not teacher:
+        abort(404)
+    courses = Course.filter_by(sheikh_id=teacher.sheikh_id) if teacher.can_upload_lessons else []
+    courses.sort(key=lambda c: c.created_at or datetime.min, reverse=True)
+    return render_template('teacher/dashboard.html', teacher=teacher, courses=courses)
+
+
+@app.route('/teacher/course/<int:course_id>/lessons')
+@login_required
+def teacher_course_lessons(course_id):
+    if current_user.role != 'teacher':
+        return redirect(url_for('dashboard'))
+    course = Course.get(course_id) or abort(404)
+    if not can_manage_course_lessons(current_user, course):
+        flash('ليست لديك صلاحية إدارة دروس هذا الكورس', 'error')
+        return redirect(url_for('teacher_dashboard'))
+    lessons = course.lessons
+    return render_template('teacher/course_lessons.html', course=course, lessons=lessons)
 
 
 # ─── تهيئة أولية (تعمل فقط إذا كانت قاعدة Firestore فارغة) ───

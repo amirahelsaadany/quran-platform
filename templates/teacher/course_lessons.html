@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}دروس {{ course.title }}{% endblock %}
+{% block extra_head %}
+<style>
+body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+.sidebar{background:#fff;border-left:0.5px solid var(--bd);padding:1.5rem 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sb-logo{padding:0 1.25rem 1.5rem;border-bottom:0.5px solid var(--bd);}
+.sb-logo .ic{width:38px;height:38px;background:linear-gradient(135deg,var(--em),var(--em-l));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+.sb-logo h2{font-family:'Amiri',serif;font-size:20px;color:var(--gold);margin-top:.5rem;}
+.sb-link{display:flex;align-items:center;justify-content:flex-start;gap:.65rem;padding:.75rem 1.25rem;font-size:16px;color:var(--tx2);transition:all .15s;border-right:2px solid transparent;}
+.sb-link:hover,.sb-link.active{background:var(--em-bg);color:var(--em);border-right-color:var(--em);}
+.sb-section{padding:.75rem 1.25rem .25rem;font-size:16px;color:var(--tx3);letter-spacing:.5px;}
+.main{background:var(--bg);padding:2rem;overflow-y:auto;}
+.page-title{font-family:'Amiri',serif;font-size:26px;color:var(--tx);margin-bottom:.25rem;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.lesson-card{background:#fff;border:0.5px solid var(--bd);border-radius:12px;padding:1rem 1.1rem;margin-bottom:.75rem;display:flex;align-items:center;gap:.85rem;}
+.lesson-num{width:32px;height:32px;background:var(--em-bg);border:0.5px solid var(--em-bd);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--em);flex-shrink:0;}
+.lesson-info{flex:1;}
+.lesson-info h4{font-size:16px;font-weight:500;color:var(--tx);}
+.lesson-info .meta{font-size:16px;color:var(--tx3);}
+.add-lesson-form{background:#fff;border:0.5px solid var(--bd);border-radius:14px;padding:1.5rem;margin-top:1.25rem;}
+.add-lesson-form h3{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:var(--tx);}
+.upload-area{border:1.5px dashed var(--bd2);border-radius:10px;padding:2rem;text-align:center;cursor:pointer;transition:all .2s;}
+.upload-area:hover{border-color:var(--em);background:var(--em-bg);}
+.upload-area .ic{font-size:28px;margin-bottom:.5rem;}
+.upload-area p{font-size:16px;color:var(--tx2);}
+.upload-area small{font-size:16px;color:var(--tx3);}
+</style>
+{% endblock %}
+{% block body %}
+<div class="sidebar">
+  <div class="sb-logo"><div class="ic">📖</div><h2 style="font-family:'Amiri',serif;font-size:16px;color:var(--gold);margin-top:.5rem;">نور القرآن</h2></div>
+  <div class="sb-section">الرئيسية</div>
+  <a href="{{ url_for('teacher_dashboard') }}" class="sb-link"><span>🏠</span>كورساتي للتدريس</a>
+  <a href="{{ url_for('index') }}" class="sb-link"><span>🌐</span>المنصة العامة</a>
+  <a href="{{ url_for('logout') }}" class="sb-link"><span>🚪</span>خروج</a>
+</div>
+<div class="main">
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}<div class="flash flash-{{ cat }}" style="margin-bottom:.75rem;">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  <div style="margin-bottom:1.5rem;">
+    <a href="{{ url_for('teacher_dashboard') }}" style="font-size:16px;color:var(--em);">← كورساتي للتدريس</a>
+    <div class="page-title" style="margin-top:.4rem;">{{ course.title }}</div>
+    <div style="font-size:16px;color:var(--tx2);">إدارة دروس هذا الكورس</div>
+  </div>
+
+  {% for lesson in lessons %}
+  <div class="lesson-card">
+    {% if lesson.thumbnail %}
+    <img src="{{ url_for('static', filename=lesson.thumbnail) }}" style="width:60px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;" alt="صورة الدرس">
+    {% else %}
+    <div class="lesson-num">{{ lesson.order_num }}</div>
+    {% endif %}
+    <div class="lesson-info">
+      <h4>{{ lesson.title }}</h4>
+      <div class="meta">
+        {% if lesson.video_path %}📹 فيديو مرفوع{% elif lesson.video_url %}🔗 رابط فيديو{% else %}⏸ لا يوجد فيديو{% endif %}
+        {% if lesson.duration %} · {{ lesson.duration }}{% endif %}
+        {% if lesson.materials %}· {{ lesson.materials|length }} مرفق{% endif %}
+      </div>
+    </div>
+    {% if lesson.is_free_preview %}<span class="badge badge-em">مجاني</span>{% endif %}
+    <form action="{{ url_for('delete_lesson', lesson_id=lesson.id) }}" method="POST" onsubmit="return confirm('حذف الدرس؟');">
+      <button class="btn btn-danger btn-sm">حذف</button>
+    </form>
+  </div>
+  {% else %}
+  <p style="color:var(--tx3);font-size:16px;padding:.5rem 0;">لا توجد دروس بعد. أضف درساً أدناه.</p>
+  {% endfor %}
+
+  <div class="add-lesson-form">
+    <h3>➕ إضافة درس جديد</h3>
+    <form method="POST" action="{{ url_for('new_lesson', course_id=course.id) }}" enctype="multipart/form-data">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">عنوان الدرس *</label>
+          <input type="text" name="title" class="form-input" placeholder="مثال: أحكام النون الساكنة" required>
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">وصف الدرس</label>
+          <textarea name="description" class="form-input" rows="2" placeholder="وصف مختصر للدرس..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">صورة الدرس 🖼</label>
+          <div class="upload-area" onclick="document.getElementById('lessonThumb').click()">
+            <div class="ic">🖼</div>
+            <p>اضغط لاختيار صورة للدرس</p>
+            <small>JPG, PNG, WEBP</small>
+          </div>
+          <input type="file" id="lessonThumb" name="lesson_thumbnail" accept="image/*" style="display:none" onchange="showFileName(this,'thumbName')">
+          <div id="thumbName" style="font-size:16px;color:var(--em);margin-top:.3rem;"></div>
+        </div>
+        <div class="form-group">
+          <label style="display:block;margin-bottom:8px;">نوع الدرس</label>
+          <select name="lesson_type" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:20px;">
+            <option value="recorded">درس مسجل</option>
+            <option value="live">جلسة مباشرة</option>
+          </select>
+          <label class="form-label">رفع فيديو (MP4, WebM...)</label>
+          <div class="upload-area" onclick="document.getElementById('videoFile').click()">
+            <div class="ic">🎥</div>
+            <p>اضغط لاختيار فيديو</p>
+            <small>حد أقصى 500MB</small>
+          </div>
+          <input type="file" id="videoFile" name="video" accept="video/*" style="display:none" onchange="showFileName(this,'videoName')">
+          <div id="videoName" style="font-size:16px;color:var(--em);margin-top:.3rem;"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">أو رابط فيديو (YouTube/...)</label>
+          <input type="url" name="video_url" class="form-input" placeholder="https://youtube.com/embed/...">
+          <div class="form-group" style="margin-top:.75rem;">
+            <label class="form-label">مدة الدرس</label>
+            <input type="text" name="duration" class="form-input" placeholder="مثال: ٤٥ دقيقة">
+          </div>
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">المرفقات (PDF, PPT...)</label>
+          <div class="upload-area" onclick="document.getElementById('matFile').click()">
+            <div class="ic">📎</div>
+            <p>إضافة ملفات مرفقة (اختياري)</p>
+            <small>PDF, DOC, PPT, ZIP</small>
+          </div>
+          <input type="file" id="matFile" name="material" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.zip" style="display:none" onchange="showFileName(this,'matName')">
+          <div id="matName" style="font-size:16px;color:var(--em);margin-top:.3rem;"></div>
+        </div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:16px;color:var(--tx2);">
+            <input type="checkbox" name="is_free_preview"> معاينة مجانية (بدون تسجيل)
+          </label>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">إضافة الدرس</button>
+    </form>
+  </div>
+</div>
+<script>
+function showFileName(input, targetId) {
+  const el = document.getElementById(targetId);
+  if (input.files && input.files.length) {
+    el.textContent = Array.from(input.files).map(f => f.name).join('، ');
+  } else {
+    el.textContent = '';
+  }
+}
+</script>
+{% endblock %}

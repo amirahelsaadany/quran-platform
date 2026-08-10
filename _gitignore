@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Firebase credentials (لا ترفعها على GitHub أبداً)
+firebase-credentials.json
+*firebase-adminsdk*.json
+
+# Database القديمة (بعد الترحيل لفايربيس تصبح غير مستخدمة)
+instance/
+*.db
+
+# Uploaded files (لا ترفعها على GitHub)
+static/uploads/videos/*
+static/uploads/thumbnails/*
+static/uploads/materials/*
+static/uploads/avatars/*
+!static/uploads/videos/.gitkeep
+!static/uploads/thumbnails/.gitkeep
+!static/uploads/materials/.gitkeep
+!static/uploads/avatars/.gitkeep
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
