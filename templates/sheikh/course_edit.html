@@ -99,7 +99,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
           <div class="form-group">
             <label class="form-label">التصنيف</label>
             <select name="category" class="form-input">
-              {% for c in ['تجويد','حفظ','تفسير','قراءة','أحكام'] %}
+              {% for c in ['تجويد','حفظ','تفسير','قراءة','أحكام','اللغة العربية'] %}
               <option {% if course.category==c %}selected{% endif %}>{{ c }}</option>
               {% endfor %}
             </select>

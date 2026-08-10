@@ -38,6 +38,9 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
   </div>
   <div class="sb-section">الرئيسية</div>
   <a href="{{ url_for('teacher_dashboard') }}" class="sb-link active"><span class="ic">🏠</span>كورساتي للتدريس</a>
+  {% if teacher.can_upload_lessons %}
+  <a href="{{ url_for('teacher_new_course') }}" class="sb-link"><span class="ic">➕</span>كورس جديد</a>
+  {% endif %}
   <a href="{{ url_for('index') }}" class="sb-link"><span class="ic">🌐</span>المنصة العامة</a>
   <a href="{{ url_for('logout') }}" class="sb-link"><span class="ic">🚪</span>تسجيل الخروج</a>
   <div class="sb-user">
@@ -50,7 +53,12 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
     {% for cat, msg in msgs %}<div class="flash flash-{{ cat }}" style="margin-bottom:.75rem;">{{ msg }}</div>{% endfor %}
   {% endwith %}
   <div class="page-title">مرحباً، {{ current_user.name.split()[0] }} 👋</div>
-  <div class="page-sub">هذه الكورسات التي يمكنك إضافة دروس إليها</div>
+  <div class="page-sub" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+    <span>هذه الكورسات التي يمكنك إضافة دروس إليها</span>
+    {% if teacher.can_upload_lessons %}
+    <a href="{{ url_for('teacher_new_course') }}" class="btn btn-primary btn-sm">➕ كورس جديد</a>
+    {% endif %}
+  </div>
 
   {% if not teacher.can_upload_lessons %}
   <div class="no-perm">
@@ -74,7 +82,8 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
   <div class="no-perm">
     <div class="icon">📚</div>
     <h3 style="margin-bottom:.5rem;">لا توجد كورسات بعد</h3>
-    <p style="font-size:16px;">لم يقم الشيخ بإنشاء أي كورسات على المنصة حتى الآن.</p>
+    <p style="font-size:16px;margin-bottom:1.25rem;">أنشئي أول كورس مستقل خاص بك، أو انتظري حتى ينشئ الشيخ كورساً.</p>
+    <a href="{{ url_for('teacher_new_course') }}" class="btn btn-primary">➕ إنشاء أول كورس</a>
   </div>
   {% endif %}
 </div>

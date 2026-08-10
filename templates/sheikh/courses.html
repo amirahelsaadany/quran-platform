@@ -51,6 +51,9 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
       <div class="c-body">
         <h3>{{ course.title }}</h3>
         <div class="meta">{{ course.level }} · {{ course.category }} · {{ course.lessons|length }} درس</div>
+        {% if course.created_by and course.created_by != course.sheikh_id %}
+        <div style="font-size:14px;color:var(--em);margin-top:.2rem;">👤 أضافه المعلم: {{ course.author.name if course.author else '—' }}</div>
+        {% endif %}
         <div style="margin-top:.4rem;display:flex;gap:.35rem;">
           <span class="badge {% if course.is_published %}badge-em{% else %}badge-gray{% endif %}">{% if course.is_published %}منشور{% else %}مسودة{% endif %}</span>
           <span class="badge {% if course.is_free or course.price==0 %}badge-em{% else %}badge-gold{% endif %}">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ر.س{% endif %}</span>

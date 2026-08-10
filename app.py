@@ -168,12 +168,17 @@ class Course(FirestoreModel):
     collection_name = 'courses'
     defaults = dict(
         title='', description='', thumbnail='', level='مبتدئ', category='تجويد',
-        price=0.0, is_free=False, is_published=False, created_at=None, sheikh_id=None
+        price=0.0, is_free=False, is_published=False, created_at=None, sheikh_id=None,
+        created_by=None
     )
 
     @property
     def sheikh(self):
         return User.get(self.sheikh_id)
+
+    @property
+    def author(self):
+        return User.get(self.created_by) if self.created_by else None
 
     @property
     def lessons(self):
@@ -632,6 +637,7 @@ def new_course():
             is_published=request.form.get('is_published') == 'on',
             thumbnail=thumb_path,
             sheikh_id=current_user.id,
+            created_by=current_user.id,
             created_at=datetime.utcnow()
         )
         course.save()
@@ -1015,6 +1021,40 @@ def teacher_course_lessons(course_id):
         return redirect(url_for('teacher_dashboard'))
     lessons = course.lessons
     return render_template('teacher/course_lessons.html', course=course, lessons=lessons)
+
+
+@app.route('/teacher/course/new', methods=['GET', 'POST'])
+@login_required
+def teacher_new_course():
+    if current_user.role != 'teacher':
+        return redirect(url_for('dashboard'))
+    teacher = get_teacher_profile(current_user)
+    if not teacher or not teacher.can_upload_lessons:
+        flash('ليست لديك صلاحية إنشاء كورسات بعد. تواصلي مع الشيخ لتفعيلها.', 'error')
+        return redirect(url_for('teacher_dashboard'))
+    if request.method == 'POST':
+        thumb_path = ''
+        if 'thumbnail' in request.files and request.files['thumbnail'].filename:
+            f = request.files['thumbnail']
+            if allowed_file(f.filename, ALLOWED_IMG):
+                thumb_path = save_file(f, 'thumbnails')
+        course = Course(
+            title=request.form.get('title'),
+            description=request.form.get('description', ''),
+            level=request.form.get('level', 'مبتدئ'),
+            category=request.form.get('category', 'تجويد'),
+            price=float(request.form.get('price', 0)),
+            is_free=request.form.get('is_free') == 'on',
+            is_published=request.form.get('is_published') == 'on',
+            thumbnail=thumb_path,
+            sheikh_id=teacher.sheikh_id,
+            created_by=current_user.id,
+            created_at=datetime.utcnow()
+        )
+        course.save()
+        flash('تم إنشاء الكورس بنجاح ✅ يمكنك الآن إضافة الدروس إليه', 'success')
+        return redirect(url_for('teacher_course_lessons', course_id=course.id))
+    return render_template('teacher/course_form.html')
 
 
 # ─── تهيئة أولية (تعمل فقط إذا كانت قاعدة Firestore فارغة) ───

@@ -55,7 +55,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 
   </div>
   <div class="filters">
     <a href="{{ url_for('courses_list') }}" class="filter-btn {% if not category and not level %}active{% endif %}">الكل</a>
-    {% for cat in ['تجويد','حفظ','تفسير','قراءة','أحكام'] %}
+    {% for cat in ['تجويد','حفظ','تفسير','قراءة','أحكام','اللغة العربية'] %}
     <a href="{{ url_for('courses_list', category=cat) }}" class="filter-btn {% if category==cat %}active{% endif %}">{{ cat }}</a>
     {% endfor %}
     <a href="{{ url_for('courses_list', level='مبتدئ') }}" class="filter-btn {% if level=='مبتدئ' %}active{% endif %}">مبتدئ</a>
