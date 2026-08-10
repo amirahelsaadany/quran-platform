@@ -357,7 +357,7 @@ def get_currency(country):
     """إرجاع الرمز المختصر للعملة حسب البلد"""
     if country and country in CURRENCY_MAP:
         return CURRENCY_MAP[country][2]
-    return '$'
+    return 'جنيه'
 
 
 app.jinja_env.globals['get_currency'] = get_currency
