@@ -357,7 +357,7 @@ def get_currency(country):
     """إرجاع الرمز المختصر للعملة حسب البلد"""
     if country and country in CURRENCY_MAP:
         return CURRENCY_MAP[country][2]
-    return 'جنيه'
+    return 'ج.م'
 
 
 app.jinja_env.globals['get_currency'] = get_currency
@@ -1071,7 +1071,7 @@ def init_db():
         password=generate_password_hash('sheikh123'),
         role='sheikh',
         bio='مقرئ متخصص برواية حفص عن عاصم، حاصل على إجازة بالسند المتصل',
-        country='المملكة العربية السعودية',
+        country='مصر',
         created_at=datetime.utcnow()
     )
     sheikh.save()
