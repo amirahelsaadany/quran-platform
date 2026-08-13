@@ -149,7 +149,6 @@ footer a:hover{color:#FFD700;}
 .scroll-down{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.4rem;color:rgba(255,255,255,0.4);font-size:17px;animation:bounce 2s infinite;z-index:2;}
 @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(8px);}}
 .scroll-arrow{width:24px;height:24px;border-right:2px solid rgba(255,215,0,0.5);border-bottom:2px solid rgba(255,215,0,0.5);transform:rotate(45deg);}
-</style>
 
 /* ═══ LIGHTBOX ═══ */
 .lightbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1000;display:none;align-items:center;justify-content:center;flex-direction:column;padding:2rem;animation:fadeIn .25s ease;}
@@ -160,7 +159,7 @@ footer a:hover{color:#FFD700;}
 .ann-img{width:100%;border-radius:12px;margin-bottom:12px;cursor:pointer;transition:transform .2s;}
 .ann-img:hover{transform:scale(1.01);}
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-
+</style>
 {% endblock %}
 
 {% block body %}
