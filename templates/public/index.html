@@ -201,7 +201,7 @@ footer a:hover{color:#FFD700;}
     <div class="sheikh-card">
       <div class="sheikh-photo-wrap">
         {% if sheikh and sheikh.hero_photo %}
-          <img src="{{ url_for('static', filename=sheikh.hero_photo) }}" alt="{{ sheikh.name }}" class="sheikh-img">
+          <img src="{{ asset_url(sheikh.hero_photo) }}" alt="{{ sheikh.name }}" class="sheikh-img">
         {% else %}
           <div class="sheikh-placeholder">
             <span class="sheikh-placeholder-ic">👳</span>
@@ -264,7 +264,7 @@ footer a:hover{color:#FFD700;}
       <div class="c-thumb {{ thumbs[loop.index0 % 6] }}">
 
   {% if course.thumbnail %}
-    <img src="{{ url_for('static', filename=course.thumbnail) }}"
+    <img src="{{ asset_url(course.thumbnail) }}"
          alt="{{ course.title }}"
          style="
          width:100%;
@@ -339,7 +339,7 @@ footer a:hover{color:#FFD700;}
     <div class="ann-item reveal">
 
       {% if ann.image %}
-      <img src="{{ url_for('static', filename=ann.image) }}"
+      <img src="{{ asset_url(ann.image) }}"
            alt="{{ ann.title }}"
            style="width:100%; border-radius:12px; margin-bottom:12px; object-fit:cover; max-height:300px;">
       {% endif %}
@@ -406,7 +406,7 @@ footer a:hover{color:#FFD700;}
       ">
 
         {% if teacher.image %}
-        <img src="{{ url_for('static', filename=teacher.image) }}"
+        <img src="{{ asset_url(teacher.image) }}"
              style="
              width:100%;
              height:260px;

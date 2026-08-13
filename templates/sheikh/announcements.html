@@ -48,7 +48,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
           <h4>{{ ann.title }}</h4>
           <form method="POST" onsubmit="return confirm('حذف الإعلان؟');"><input type="hidden" name="action" value="delete"><input type="hidden" name="ann_id" value="{{ ann.id }}"><button class="btn btn-danger btn-sm">حذف</button></form>
         </div>
-        {% if ann.image %}<img src="{{ url_for('static', filename=ann.image) }}" alt="صورة الإعلان">{% endif %}
+        {% if ann.image %}<img src="{{ asset_url(ann.image) }}" alt="صورة الإعلان">{% endif %}
         <p>{{ ann.content }}</p>
         <div class="meta">{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
       </div>

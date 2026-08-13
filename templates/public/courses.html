@@ -76,7 +76,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 
 
 
   {% if course.thumbnail %}
-  <img src="{{ url_for('static', filename=course.thumbnail) }}"
+  <img src="{{ asset_url(course.thumbnail) }}"
        alt="{{ course.title }}"
        style="
        width:100%;

@@ -36,7 +36,7 @@ body{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
     <form method="POST" enctype="multipart/form-data">
       <div style="display:flex;align-items:center;gap:1.1rem;margin-bottom:1.4rem;padding-bottom:1.4rem;border-bottom:0.5px solid var(--bd);">
         <div class="avatar-circle">
-          {% if current_user.avatar %}<img src="{{ url_for('static', filename=current_user.avatar) }}" alt="">{% else %}👤{% endif %}
+          {% if current_user.avatar %}<img src="{{ asset_url(current_user.avatar) }}" alt="">{% else %}👤{% endif %}
         </div>
         <div>
           <div style="font-size:17px;font-weight:500;">{{ current_user.name }}</div>

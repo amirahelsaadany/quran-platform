@@ -106,7 +106,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
     <div class="teacher-card">
       <div class="teacher-image">
         {% if teacher.image %}
-          <img src="{{ url_for('static', filename=teacher.image) }}" alt="{{ teacher.name }}">
+          <img src="{{ asset_url(teacher.image) }}" alt="{{ teacher.name }}">
         {% else %}
           <span>👨‍🏫</span>
         {% endif %}

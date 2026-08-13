@@ -48,7 +48,7 @@ body{display:grid;grid-template-columns:1fr 320px;grid-template-rows:auto 1fr;mi
   <div class="video-wrap">
     {% if current_lesson.video_path %}
     <video controls>
-      <source src="{{ url_for('static', filename=current_lesson.video_path) }}" type="video/mp4">
+      <source src="{{ asset_url(current_lesson.video_path) }}" type="video/mp4">
     </video>
     {% elif current_lesson.video_url %}
     <iframe src="{{ current_lesson.video_url }}" allowfullscreen></iframe>
@@ -72,7 +72,7 @@ body{display:grid;grid-template-columns:1fr 320px;grid-template-rows:auto 1fr;mi
     <div class="materials">
       <h3>📎 المرفقات</h3>
       {% for mat in current_lesson.materials %}
-      <a href="{{ url_for('static', filename=mat.file_path) }}" class="mat-item" target="_blank" download>
+      <a href="{{ asset_url(mat.file_path) }}" class="mat-item" target="_blank" download>
         📄 {{ mat.title }}
       </a>
       {% endfor %}

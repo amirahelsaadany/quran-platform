@@ -56,7 +56,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
           <div class="photo-label">🖼 صورة الصفحة الرئيسية</div>
           <div class="photo-box {% if current_user.hero_photo %}has-img{% endif %}" id="heroBox" onclick="document.getElementById('heroInput').click()">
             {% if current_user.hero_photo %}
-              <img id="heroPreview" src="{{ url_for('static', filename=current_user.hero_photo) }}" class="photo-preview">
+              <img id="heroPreview" src="{{ asset_url(current_user.hero_photo) }}" class="photo-preview">
               <div style="font-size:17px;color:var(--em);">✓ اضغط لتغييرها</div>
             {% else %}
               <div class="ph" id="heroPH"><span class="ic">🖼</span><p>اضغط لرفع الصورة</p><small>تظهر في الصفحة الرئيسية</small></div>
@@ -69,7 +69,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
           <div class="photo-label">👤 صورة الملف الشخصي</div>
           <div class="photo-box {% if current_user.avatar %}has-img{% endif %}" id="avatarBox" onclick="document.getElementById('avatarInput').click()">
             {% if current_user.avatar %}
-              <img id="avatarPreview3" src="{{ url_for('static', filename=current_user.avatar) }}" class="photo-preview">
+              <img id="avatarPreview3" src="{{ asset_url(current_user.avatar) }}" class="photo-preview">
               <div style="font-size:17px;color:var(--em);">✓ اضغط لتغييرها</div>
             {% else %}
               <div class="ph" id="avatarPH"><span class="ic">👳</span><p>اضغط لرفع الصورة</p><small>صورتك الشخصية</small></div>

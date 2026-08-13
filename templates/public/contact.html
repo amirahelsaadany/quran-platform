@@ -65,7 +65,7 @@ footer{background:#fff;border-top:0.5px solid var(--bd);padding:1.5rem 2.5rem;te
     <div class="sheikh-banner">
       <div class="sheikh-photo">
         {% if sheikh.avatar %}
-          <img src="{{ url_for('static', filename=sheikh.avatar) }}" alt="{{ sheikh.name }}">
+          <img src="{{ asset_url(sheikh.avatar) }}" alt="{{ sheikh.name }}">
         {% else %}
           👳
         {% endif %}

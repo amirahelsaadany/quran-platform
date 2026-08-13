@@ -6,7 +6,7 @@ from datetime import datetime
 import os, uuid, json
 
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, storage
 
 app = Flask(__name__)
 
@@ -20,7 +20,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'quran-platform-secret-k
 # 3) ملف firebase-credentials.json في مجلد المشروع (للتشغيل المحلي)
 def _init_firebase():
     if firebase_admin._apps:
-        return firestore.client()
+        return firestore.client(), storage.bucket()
 
     cred = None
     raw_json = os.environ.get('FIREBASE_CREDENTIALS_JSON')
@@ -34,13 +34,13 @@ def _init_firebase():
     elif os.path.exists(local_default):
         cred = credentials.Certificate(local_default)
     else:
-        # يحاول استخدام Application Default Credentials (مثل GOOGLE_APPLICATION_CREDENTIALS)
         cred = credentials.ApplicationDefault()
 
-    firebase_admin.initialize_app(cred)
-    return firestore.client()
-
-fdb = _init_firebase()
+    firebase_admin.initialize_app(cred, {
+        'storageBucket': 'quran-platform-29466.appspot.com'
+    })
+    return firestore.client(), storage.bucket()
+fdb, bucket = _init_firebase()
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -274,12 +274,27 @@ def allowed_file(filename, allowed):
 def save_file(file, subfolder):
     ext = file.filename.rsplit('.', 1)[1].lower()
     fname = f"{uuid.uuid4().hex}.{ext}"
-    path = os.path.join(app.config['UPLOAD_FOLDER'], subfolder, fname)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    file.save(path)
-    return f"uploads/{subfolder}/{fname}"
+    blob_path = f"uploads/{subfolder}/{fname}"
+    blob = bucket.blob(blob_path)
 
+    content_type = file.content_type
+    if not content_type:
+        ext_to_mime = {
+            'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png',
+            'gif': 'image/gif', 'webp': 'image/webp', 'mp4': 'video/mp4',
+            'webm': 'video/webm', 'mkv': 'video/x-matroska', 'avi': 'video/x-msvideo',
+            'mov': 'video/quicktime', 'pdf': 'application/pdf', 'doc': 'application/msword',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'ppt': 'application/vnd.ms-powerpoint',
+            'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'txt': 'text/plain', 'zip': 'application/zip'
+        }
+        content_type = ext_to_mime.get(ext, 'application/octet-stream')
 
+    file.seek(0)
+    blob.upload_from_file(file, content_type=content_type)
+    blob.make_public()
+    return blob.public_url
 def get_enrollment(course_id):
     if not current_user.is_authenticated:
         return None
@@ -357,12 +372,23 @@ def get_currency(country):
     """إرجاع الرمز المختصر للعملة حسب البلد"""
     if country and country in CURRENCY_MAP:
         return CURRENCY_MAP[country][2]
-    return 'ج.م'
+    return 'جنيه'
 
 
 app.jinja_env.globals['get_currency'] = get_currency
 app.jinja_env.globals['CURRENCY_MAP'] = CURRENCY_MAP
 
+
+
+def asset_url(path):
+    """تعرض رابطاً مباشراً للملف — تدعم روابط Firebase Storage أو المسارات المحلية"""
+    if not path:
+        return ''
+    if path.startswith('http://') or path.startswith('https://'):
+        return path
+    return url_for('static', filename=path)
+
+app.jinja_env.globals['asset_url'] = asset_url
 
 # ─── Auth Routes ──────────────────────────────────────────
 @app.route('/login', methods=['GET', 'POST'])
@@ -1071,7 +1097,7 @@ def init_db():
         password=generate_password_hash('sheikh123'),
         role='sheikh',
         bio='مقرئ متخصص برواية حفص عن عاصم، حاصل على إجازة بالسند المتصل',
-        country='مصر',
+        country='المملكة العربية السعودية',
         created_at=datetime.utcnow()
     )
     sheikh.save()
