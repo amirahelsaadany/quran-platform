@@ -150,6 +150,17 @@ footer a:hover{color:#FFD700;}
 @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(8px);}}
 .scroll-arrow{width:24px;height:24px;border-right:2px solid rgba(255,215,0,0.5);border-bottom:2px solid rgba(255,215,0,0.5);transform:rotate(45deg);}
 </style>
+
+/* ═══ LIGHTBOX ═══ */
+.lightbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1000;display:none;align-items:center;justify-content:center;flex-direction:column;padding:2rem;animation:fadeIn .25s ease;}
+.lightbox-overlay.show{display:flex;}
+.lightbox-overlay img{max-width:90%;max-height:85vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5);object-fit:contain;}
+.lightbox-close{position:absolute;top:1.5rem;right:1.5rem;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;}
+.lightbox-close:hover{background:rgba(255,255,255,0.3);transform:scale(1.1);}
+.ann-img{width:100%;border-radius:12px;margin-bottom:12px;cursor:pointer;transition:transform .2s;}
+.ann-img:hover{transform:scale(1.01);}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
 {% endblock %}
 
 {% block body %}
@@ -277,7 +288,7 @@ footer a:hover{color:#FFD700;}
     <span>{{ icons[loop.index0 % 6] }}</span>
   {% endif %}
         <span style="position:absolute;top:10px;right:10px;" class="{% if course.is_free or course.price==0 %}badge-free{% else %}badge-paid{% endif %}">
-          {% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ج.م{% endif %}
+          {% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} {% if current_user.is_authenticated %}{{ get_currency(current_user.country) }}{% else %}ر.س{% endif %}{% endif %}
         </span>
       </div>
       <div class="c-body">
@@ -285,7 +296,7 @@ footer a:hover{color:#FFD700;}
         <div class="meta">{{ course.level }} · {{ course.category }}</div>
         <div class="c-foot">
           <span class="stars">★★★★★</span>
-          <span class="price-tag">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ج.م{% endif %}</span>
+          <span class="price-tag">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} {% if current_user.is_authenticated %}{{ get_currency(current_user.country) }}{% else %}ر.س{% endif %}{% endif %}</span>
         </div>
       </div>
     </a>
@@ -341,7 +352,8 @@ footer a:hover{color:#FFD700;}
       {% if ann.image %}
       <img src="{{ asset_url(ann.image) }}"
            alt="{{ ann.title }}"
-           style="width:100%; border-radius:12px; margin-bottom:12px; object-fit:cover; max-height:300px;">
+           class="ann-img"
+           onclick="openLightbox(this.src)">
       {% endif %}
 
       <h4>{{ ann.title }}</h4>
@@ -354,6 +366,12 @@ footer a:hover{color:#FFD700;}
   </div>
 </div>
 {% endif %}
+
+<!-- LIGHTBOX MODAL -->
+<div class="lightbox-overlay" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox(event)">✕</button>
+  <img src="" alt="" id="lightbox-img">
+</div>
 <section style="padding:70px 0;">
 
   <div class="container">

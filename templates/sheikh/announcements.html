@@ -17,7 +17,8 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
 .ann-card h4{font-size:17px;font-weight:600;margin-bottom:.5rem;}
 .ann-card p{font-size:16px;color:var(--tx2);line-height:1.9;}
 .ann-card .meta{font-size:17px;color:var(--tx3);margin-top:.5rem;}
-.ann-card img{width:100%;max-height:220px;object-fit:cover;border-radius:8px;margin-bottom:.6rem;}
+.ann-card img{width:100%;border-radius:8px;margin-bottom:.6rem;cursor:pointer;transition:transform .2s;}
+.ann-card img:hover{transform:scale(1.01);}
 </style>
 {% endblock %}
 {% block body %}
@@ -48,7 +49,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
           <h4>{{ ann.title }}</h4>
           <form method="POST" onsubmit="return confirm('حذف الإعلان؟');"><input type="hidden" name="action" value="delete"><input type="hidden" name="ann_id" value="{{ ann.id }}"><button class="btn btn-danger btn-sm">حذف</button></form>
         </div>
-        {% if ann.image %}<img src="{{ asset_url(ann.image) }}" alt="صورة الإعلان">{% endif %}
+        {% if ann.image %}<img src="{{ asset_url(ann.image) }}" alt="صورة الإعلان" onclick="openLightbox(this.src)">{% endif %}
         <p>{{ ann.content }}</p>
         <div class="meta">{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
       </div>
@@ -80,4 +81,29 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
     </div>
   </div>
 </div>
+
+<!-- LIGHTBOX MODAL -->
+<div class="lightbox-overlay" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox(event)">✕</button>
+  <img src="" alt="" id="lightbox-img">
+</div>
+<script>
+function openLightbox(src){
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox(e){
+  if(e.target === document.getElementById('lightbox') || e.target.classList.contains('lightbox-close')){
+    document.getElementById('lightbox').classList.remove('show');
+    document.body.style.overflow = '';
+  }
+}
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    document.getElementById('lightbox').classList.remove('show');
+    document.body.style.overflow = '';
+  }
+});
+</script>
 {% endblock %}
