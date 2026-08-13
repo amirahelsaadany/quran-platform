@@ -5,3 +5,4 @@ werkzeug==3.0.3
 pillow==10.3.0
 gunicorn==22.0.0
 firebase-admin==6.5.0
+cloudinary==1.42.1
