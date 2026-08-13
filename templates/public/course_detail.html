@@ -56,7 +56,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 
         <span class="meta-item">🏷 {{ course.category }}</span>
         <span class="meta-item">📹 {{ lessons|length }} درس</span>
         <span class="badge {% if course.is_free or course.price==0 %}badge-em{% else %}badge-gold{% endif %}">
-          {% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ر.س{% endif %}
+          {% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ج.م{% endif %}
         </span>
       </div>
       {% if course.description %}<div class="desc">{{ course.description }}</div>{% endif %}
@@ -82,8 +82,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 
     <div class="sidebar-card">
       <div class="thumb">📚</div>
       <div class="card-body">
-        {% set currency = get_currency(current_user.country) if current_user.is_authenticated else 'ر.س' %}
-        <div class="price-tag">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} {{ currency }}{% endif %}</div>
+        
+        <div class="price-tag">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ج.م{% endif %}</div>
         {% if enrollment and enrollment.is_approved %}
           <a href="{{ url_for('learn', course_id=course.id) }}" class="btn btn-primary" style="width:100%;justify-content:center;padding:.9rem;font-size:16px;">▶ متابعة التعلم</a>
         {% elif enrollment %}
@@ -176,7 +176,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 
           <div class="row"><span class="lbl">التصنيف</span><span class="val">{{ course.category }}</span></div>
           <div class="row"><span class="lbl">عدد الدروس</span><span class="val">{{ lessons|length }} درس</span></div>
           <div class="row"><span class="lbl">المقرئ</span><span class="val">{{ course.sheikh.name }}</span></div>
-          <div class="row"><span class="lbl">السعر</span><span class="val">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} {{ currency }}{% endif %}</span></div>
+          <div class="row"><span class="lbl">السعر</span><span class="val">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ج.م{% endif %}</span></div>
         </div>
       </div>
     </div>

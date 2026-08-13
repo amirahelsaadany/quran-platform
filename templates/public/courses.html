@@ -71,7 +71,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 
 
         {{ icons[loop.index0 % 6] }}
         <span style="position:absolute;top:10px;right:10px;" class="badge {% if course.is_free or course.price==0 %}badge-em{% else %}badge-gold{% endif %}">
-          {% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} {% if current_user.is_authenticated %}{{ get_currency(current_user.country) }}{% else %}ر.س{% endif %}{% endif %}
+          {% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ج.م{% endif %}
         </span>
 
 
@@ -95,7 +95,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 
         {% if course.description %}<div class="desc">{{ course.description }}</div>{% endif %}
         <div class="c-foot">
           <span class="meta-tag">{{ course.level }} · {{ course.lessons|length }} درس</span>
-          <span class="price">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} {% if current_user.is_authenticated %}{{ get_currency(current_user.country) }}{% else %}ر.س{% endif %}{% endif %}</span>
+          <span class="price">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ج.م{% endif %}</span>
         </div>
       </div>
     </a>

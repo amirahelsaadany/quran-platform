@@ -6,11 +6,7 @@ from datetime import datetime
 import os, uuid, json
 
 import firebase_admin
-from firebase_admin import credentials, firestore
-
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
+from firebase_admin import credentials, firestore, storage
 
 app = Flask(__name__)
 
@@ -24,7 +20,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'quran-platform-secret-k
 # 3) ملف firebase-credentials.json في مجلد المشروع (للتشغيل المحلي)
 def _init_firebase():
     if firebase_admin._apps:
-        return firestore.client()
+        return firestore.client(), storage.bucket()
 
     cred = None
     raw_json = os.environ.get('FIREBASE_CREDENTIALS_JSON')
@@ -40,18 +36,11 @@ def _init_firebase():
     else:
         cred = credentials.ApplicationDefault()
 
-    firebase_admin.initialize_app(cred)
-    return firestore.client()
-
-fdb = _init_firebase()
-
-# ─── Cloudinary Configuration ─────────────────────────────
-cloudinary.config(
-    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
-    api_key=os.environ.get('CLOUDINARY_API_KEY', ''),
-    api_secret=os.environ.get('CLOUDINARY_API_SECRET', ''),
-    secure=True
-)
+    firebase_admin.initialize_app(cred, {
+        'storageBucket': 'quran-platform-29466.appspot.com'
+    })
+    return firestore.client(), storage.bucket()
+fdb, bucket = _init_firebase()
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -283,27 +272,29 @@ def allowed_file(filename, allowed):
 
 
 def save_file(file, subfolder):
-    """يرفع الملف إلى Cloudinary ويرجع الرابط المباشر"""
     ext = file.filename.rsplit('.', 1)[1].lower()
     fname = f"{uuid.uuid4().hex}.{ext}"
+    blob_path = f"uploads/{subfolder}/{fname}"
+    blob = bucket.blob(blob_path)
 
-    # Determine resource_type
-    if ext in ALLOWED_VIDEO:
-        resource_type = 'video'
-    elif ext in ALLOWED_IMG:
-        resource_type = 'image'
-    else:
-        resource_type = 'raw'
+    content_type = file.content_type
+    if not content_type:
+        ext_to_mime = {
+            'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png',
+            'gif': 'image/gif', 'webp': 'image/webp', 'mp4': 'video/mp4',
+            'webm': 'video/webm', 'mkv': 'video/x-matroska', 'avi': 'video/x-msvideo',
+            'mov': 'video/quicktime', 'pdf': 'application/pdf', 'doc': 'application/msword',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'ppt': 'application/vnd.ms-powerpoint',
+            'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'txt': 'text/plain', 'zip': 'application/zip'
+        }
+        content_type = ext_to_mime.get(ext, 'application/octet-stream')
 
     file.seek(0)
-    result = cloudinary.uploader.upload(
-        file,
-        public_id=f"quran_platform/{subfolder}/{fname}",
-        resource_type=resource_type,
-        folder=f"quran_platform/{subfolder}",
-        overwrite=True
-    )
-    return result.get('secure_url', '')
+    blob.upload_from_file(file, content_type=content_type)
+    blob.make_public()
+    return blob.public_url
 def get_enrollment(course_id):
     if not current_user.is_authenticated:
         return None
@@ -349,39 +340,37 @@ def can_manage_course_lessons(user, course):
 # خريطة العملات حسب البلد
 CURRENCY_MAP = {
     'مصر': ('جنيه', 'EGP', 'ج.م'),
-    'المملكة العربية السعودية': ('ريال سعودي', 'SAR', 'ر.س'),
-    'الإمارات العربية المتحدة': ('درهم', 'AED', 'د.إ'),
-    'الكويت': ('دينار كويتي', 'KWD', 'د.ك'),
-    'البحرين': ('دينار بحريني', 'BHD', 'د.ب'),
-    'قطر': ('ريال قطري', 'QAR', 'ر.ق'),
-    'عُمان': ('ريال عماني', 'OMR', 'ر.ع'),
-    'الأردن': ('دينار أردني', 'JOD', 'د.أ'),
-    'العراق': ('دينار عراقي', 'IQD', 'د.ع'),
-    'سوريا': ('ليرة سورية', 'SYP', 'ل.س'),
-    'لبنان': ('ليرة لبنانية', 'LBP', 'ل.ل'),
-    'ليبيا': ('دينار ليبي', 'LYD', 'د.ل'),
-    'تونس': ('دينار تونسي', 'TND', 'د.ت'),
-    'الجزائر': ('دينار جزائري', 'DZD', 'د.ج'),
-    'المغرب': ('درهم مغربي', 'MAD', 'د.م'),
-    'السودان': ('جنيه سوداني', 'SDG', 'ج.س'),
-    'اليمن': ('ريال يمني', 'YER', 'ر.ي'),
-    'فلسطين': ('شيكل', 'ILS', '₪'),
-    'موريتانيا': ('أوقية', 'MRU', 'أ.م'),
-    'الصومال': ('شلن صومالي', 'SOS', 'ش.ص'),
-    'جيبوتي': ('فرنك جيبوتي', 'DJF', 'ف.ج'),
-    'تركيا': ('ليرة تركية', 'TRY', '₺'),
-    'باكستان': ('روبية باكستانية', 'PKR', 'ر.ب'),
-    'ماليزيا': ('رينغيت', 'MYR', 'RM'),
-    'إندونيسيا': ('روبية', 'IDR', 'Rp'),
-    'نيجيريا': ('نيرة', 'NGN', '₦'),
+    'المملكة العربية السعودية': ('جنيه', 'EGP', 'ج.م'),
+    'الإمارات العربية المتحدة': ('جنيه', 'EGP', 'ج.م'),
+    'الكويت': ('جنيه', 'EGP', 'ج.م'),
+    'البحرين': ('جنيه', 'EGP', 'ج.م'),
+    'قطر': ('جنيه', 'EGP', 'ج.م'),
+    'عُمان': ('جنيه', 'EGP', 'ج.م'),
+    'الأردن': ('جنيه', 'EGP', 'ج.م'),
+    'العراق': ('جنيه', 'EGP', 'ج.م'),
+    'سوريا': ('جنيه', 'EGP', 'ج.م'),
+    'لبنان': ('جنيه', 'EGP', 'ج.م'),
+    'ليبيا': ('جنيه', 'EGP', 'ج.م'),
+    'تونس': ('جنيه', 'EGP', 'ج.م'),
+    'الجزائر': ('جنيه', 'EGP', 'ج.م'),
+    'المغرب': ('جنيه', 'EGP', 'ج.م'),
+    'السودان': ('جنيه', 'EGP', 'ج.م'),
+    'اليمن': ('جنيه', 'EGP', 'ج.م'),
+    'فلسطين': ('جنيه', 'EGP', 'ج.م'),
+    'موريتانيا': ('جنيه', 'EGP', 'ج.م'),
+    'الصومال': ('جنيه', 'EGP', 'ج.م'),
+    'جيبوتي': ('جنيه', 'EGP', 'ج.م'),
+    'تركيا': ('جنيه', 'EGP', 'ج.م'),
+    'باكستان': ('جنيه', 'EGP', 'ج.م'),
+    'ماليزيا': ('جنيه', 'EGP', 'ج.م'),
+    'إندونيسيا': ('جنيه', 'EGP', 'ج.م'),
+    'نيجيريا': ('جنيه', 'EGP', 'ج.م'),
 }
 
 
 def get_currency(country):
-    """إرجاع الرمز المختصر للعملة حسب البلد"""
-    if country and country in CURRENCY_MAP:
-        return CURRENCY_MAP[country][2]
-    return 'جنيه'
+    """إرجاع رمز الجنيه المصري لجميع الدول"""
+    return 'ج.م'
 
 
 app.jinja_env.globals['get_currency'] = get_currency

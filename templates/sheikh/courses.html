@@ -56,7 +56,7 @@ body{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
         {% endif %}
         <div style="margin-top:.4rem;display:flex;gap:.35rem;">
           <span class="badge {% if course.is_published %}badge-em{% else %}badge-gray{% endif %}">{% if course.is_published %}منشور{% else %}مسودة{% endif %}</span>
-          <span class="badge {% if course.is_free or course.price==0 %}badge-em{% else %}badge-gold{% endif %}">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ر.س{% endif %}</span>
+          <span class="badge {% if course.is_free or course.price==0 %}badge-em{% else %}badge-gold{% endif %}">{% if course.is_free or course.price==0 %}مجاني{% else %}{{ course.price|int }} ج.م{% endif %}</span>
         </div>
         <div class="c-foot">
           <a href="{{ url_for('sheikh_course_edit', course_id=course.id) }}" class="btn btn-ghost btn-sm" style="flex:1;justify-content:center;">تعديل</a>
