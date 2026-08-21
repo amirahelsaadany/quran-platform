@@ -50,7 +50,7 @@ cloudinary.config(
     api_secret=os.environ.get('CLOUDINARY_API_SECRET'),
     secure=True
 )
-fdb, bucket = _init_firebase()
+fdb = _init_firebase()
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
